@@ -2,10 +2,10 @@ package browscap_go
 
 import (
 	"fmt"
-	"github.com/fromYukki/browscap_go/ini"
 )
 
 var (
+	dict		*dictionary
 	initialized bool
 )
 
@@ -13,19 +13,15 @@ func InitBrowsCap(path string, force bool) error {
 	if initialized && !force {
 		return nil
 	}
-
-	var (
-		dic	ini.Dictionary
-		err	error
-	)
+	var err	error
 
 	// Load ini file
-	if dic, err = ini.LoadFile(path); err != nil {
+	if dict, err = loadFromIniFile(path); err != nil {
 		return fmt.Errorf("browscap: An error occurred while reading file, %v ", err)
 	}
 
 	// Process ini file
-	if err = process(dic); err != nil {
+	if err = dict.buildExpressions(); err != nil {
 		return fmt.Errorf("browscap: An error occurred while processing data, %v ", err)
 	}
 
@@ -33,8 +29,25 @@ func InitBrowsCap(path string, force bool) error {
 	return nil
 }
 
-func process(dic ini.Dictionary) error {
-	return nil
+func GetBrowser(userAgent string) (browser *Browser, ok bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			browser = nil
+			ok = false
+		}
+	}()
+
+	for i, exp := range dict.expressions {
+		if exp.Match([]byte(userAgent)) {
+			sec := dict.sorted[i]
+			data := dict.findData(sec.Name)
+			browser = extractBrowser(data)
+			ok = true
+			return
+		}
+	}
+
+	return
 }
 
 /*import (
@@ -80,27 +93,7 @@ var (
 		"AolVersion":			"0",
 	}
 
-	regexReplace = map[string]string{
-		"(": "\\(",
-		")": "\\)",
-		"[": "\\[",
-		"]": "\\]",
-		"{": "\\{",
-		"}": "\\}",
-		"<": "\\<",
-		">": "\\>",
-		"$": "\\$",
-		"^": "\\^",
-		"+": "\\+",
-		"!": "\\!",
-		"=": "\\=",
-		"|": "\\|",
-		":": "\\:",
-		"-": "\\-",
-		//
-		"*": ".*",
-		"?": ".",
-	}
+
 )
 
 type Patterns []*Pattern
@@ -152,80 +145,8 @@ func GetBrowser(agent string) (map[string]string, bool) {
 	return nil, false
 }
 
-func newPattern(pattern string) *Pattern {
-	return &Pattern{
-		Pattern:	pattern,
-		Data:		make(map[string]string),
-	}
-}
 
-func rebase(patternsMap PatternsMap) (Patterns, error) {
-	res := Patterns{}
 
-	for name, pattern := range patternsMap {
-		// Collect data items
-		resData := findData(patternsMap, name)
 
-		// Rebuild data without parents
-		pattern.Data = make(map[string]string)
-		if len(resData) > 0 {
-			for k, v := range resData {
-				if k == "Parent" {
-					continue
-				}
-				pattern.Data[k] = v
-			}
-		}
 
-		// Build regexp
-		exp, err := regexp.Compile("(?i)^" + escapePattern(pattern.Pattern) + "$")
-		if err != nil {
-			return nil, err
-		}
-		pattern.Regexp = exp
-
-		res = append(res, pattern)
-	}
-
-	return res, nil
-}
-
-func findData(patternsMap PatternsMap, name string) (map[string]string) {
-	res := make(map[string]string)
-
-	if item, found := patternsMap[name]; found {
-		// Parent's data
-		if parentName, hasParent := item.Data["Parent"]; hasParent {
-			parentData := findData(patternsMap, parentName)
-			if len(parentData) > 0 {
-				for k, v := range parentData {
-					if k == "Parent" {
-						continue
-					}
-					res[k] = v
-				}
-			}
-		}
-		// It's item data
-		if len(item.Data) > 0 {
-			for k, v := range item.Data {
-				if k == "Parent" {
-					continue
-				}
-				res[k] = v
-			}
-		}
-	}
-
-	return res
-}
-
-func escapePattern(s string) string {
-	s = strings.Replace(s, "\\", "\\\\", -1)
-	s = strings.Replace(s, ".", "\\.", -1)
-
-	for k, v := range regexReplace {
-		s = strings.Replace(s, k, v, -1)
-	}
-	return s
-}*/
+*/
