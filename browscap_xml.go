@@ -1,5 +1,6 @@
 package browscap_go
 
+/*
 import (
 	"encoding/xml"
 	"io/ioutil"
@@ -54,3 +55,4 @@ func buildFromXml(caps *xmlBrowserCaps) PatternsMap {
 
 	return patterns
 }
+*/

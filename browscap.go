@@ -1,6 +1,43 @@
 package browscap_go
 
 import (
+	"fmt"
+	"github.com/fromYukki/browscap_go/ini"
+)
+
+var (
+	initialized bool
+)
+
+func InitBrowsCap(path string, force bool) error {
+	if initialized && !force {
+		return nil
+	}
+
+	var (
+		dic	ini.Dictionary
+		err	error
+	)
+
+	// Load ini file
+	if dic, err = ini.LoadFile(path); err != nil {
+		return fmt.Errorf("browscap: An error occurred while reading file, %v ", err)
+	}
+
+	// Process ini file
+	if err = process(dic); err != nil {
+		return fmt.Errorf("browscap: An error occurred while processing data, %v ", err)
+	}
+
+	initialized = true
+	return nil
+}
+
+func process(dic ini.Dictionary) error {
+	return nil
+}
+
+/*import (
 	"strings"
 	"regexp"
 	"fmt"
@@ -13,7 +50,7 @@ const (
 var (
 	parsed bool
 	patterns Patterns
-	/*defaultProperties = map[string]string{
+	defaultProperties = map[string]string{
 		"Comment":				"DefaultProperties",
 		"Browser":				"DefaultProperties",
 		"Version":				"0.0",
@@ -41,7 +78,7 @@ var (
 		"Crawler":				"false",
 		"CssVersion":			"0",
 		"AolVersion":			"0",
-	}*/
+	}
 
 	regexReplace = map[string]string{
 		"(": "\\(",
@@ -191,4 +228,4 @@ func escapePattern(s string) string {
 		s = strings.Replace(s, k, v, -1)
 	}
 	return s
-}
+}*/
