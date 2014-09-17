@@ -27,8 +27,8 @@ func TestGetBrowser(t *testing.T) {
 	if browser, ok := GetBrowser(TEST_USER_AGENT); !ok {
 		t.Error("Browser not found")
 	} else if browser.Browser != "Chrome" {
-		t.Error("Expected Chrome but got %q", browser.Browser)
+		t.Errorf("Expected Chrome but got %q", browser.Browser)
 	} else if browser.Platform != "MacOSX" {
-		t.Error("Expected MacOSX but got %q", browser.Platform)
+		t.Errorf("Expected MacOSX but got %q", browser.Platform)
 	}
 }
