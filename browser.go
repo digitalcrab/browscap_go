@@ -3,15 +3,16 @@ package browscap_go
 type Browser struct {
 	Browser			string
 	BrowserVersion	string
+	// Browser, Application, Bot/Crawler, Useragent Anonymizer, Offline Browser,
+	// Multimedia Player, Library, Feed Reader, Email Client or unknown
 	BrowserType		string
 	Platform		string
 	PlatformVersion	string
+	// Mobile Phone, Mobile Device, Tablet, Desktop, TV Device, Console,
+	// FonePad, Ebook Reader, Car Entertainment System or unknown
 	DeviceType		string
 	DeviceName		string
 	DeviceBrand		string
-	IsCrawler		bool
-	IsMobileDevice	bool
-	IsTablet		bool
 }
 
 func extractBrowser(data map[string]string) *Browser {
@@ -41,16 +42,14 @@ func extractBrowser(data map[string]string) *Browser {
 	if item, ok := data["Device_Brand_Name"]; ok {
 		browser.DeviceBrand = item
 	}
-	if item, ok := data["Crawler"]; ok {
-		browser.IsCrawler = item == "true"
-	}
-	if item, ok := data["isMobileDevice"]; ok {
-		browser.IsMobileDevice = item == "true"
-	}
-	if item, ok := data["isTablet"]; ok {
-		browser.IsTablet = item == "true"
-	}
 
 	return browser
 }
 
+func (self *Browser) IsCrawler() bool {
+	return self.BrowserType == "Bot/Crawler"
+}
+
+func (self *Browser) IsMobile() bool {
+	return self.DeviceType == "Mobile Phone" || self.DeviceType == "Mobile Device"
+}
