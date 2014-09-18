@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// Ini
 	sEmpty		= []byte{}		// empty signal
 	nComment	= []byte{'#'}	// number signal
 	sComment	= []byte{';'}	// semicolon signal
@@ -47,6 +48,7 @@ func loadFromIniFile(path string) (*dictionary, error) {
 
 	buf := bufio.NewReader(file)
 	section := ""
+	sectionPrefix := ""
 
 	for {
 		line, _, err := buf.ReadLine()
@@ -79,6 +81,7 @@ func loadFromIniFile(path string) (*dictionary, error) {
 		// Section line
 		if bytes.HasPrefix(line, sStart) && bytes.HasSuffix(line, sEnd) {
 			section = string(line[1 : len(line)-1])
+			sectionPrefix = getPrefix(section)
 			continue
 		}
 
@@ -93,6 +96,19 @@ func loadFromIniFile(path string) (*dictionary, error) {
 			sections[section] = idx
 			// Save mapped
 			dict.mapped[section] = dict.sorted[idx]
+			// Create prefix for section
+			if _, exists := dict.expressions[sectionPrefix]; !exists {
+				dict.expressions[sectionPrefix] = []*expression{}
+			}
+			// Build expression
+			var ee *expression
+			ss := []byte(section)
+			if bytes.IndexAny(ss, "*?") != -1 {
+				ee = newRegexpExpression(idx, section)
+			} else {
+				ee = newCompareExpression(idx, ss)
+			}
+			dict.expressions[sectionPrefix] = append(dict.expressions[sectionPrefix], ee)
 		}
 
 		// Key => Value

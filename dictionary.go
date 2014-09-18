@@ -1,10 +1,8 @@
 package browscap_go
 
-import "regexp"
-
 type dictionary struct {
 	sorted		[]*section
-	expressions	[]*regexp.Regexp
+	expressions	map[string][]*expression
 	mapped		map[string]*section
 }
 
@@ -16,7 +14,7 @@ type section struct {
 func newDictionary() *dictionary {
 	return &dictionary{
 		sorted:			[]*section{},
-		expressions:	[]*regexp.Regexp{},
+		expressions:	make(map[string][]*expression),
 		mapped:			make(map[string]*section),
 	}
 }
@@ -26,21 +24,6 @@ func newSection(name string) *section {
 		Name:	name,
 		Data:	make(map[string]string),
 	}
-}
-
-func (self *dictionary) buildExpressions() error {
-	// Reset expressions
-	dict.expressions = []*regexp.Regexp{}
-
-	for _, sec := range self.sorted {
-		exp, err := regexp.Compile("(?i)^" + escapePattern(sec.Name) + "$")
-		if err != nil {
-			return err
-		}
-		self.expressions = append(self.expressions, exp)
-	}
-
-	return nil
 }
 
 func (self *dictionary) findData(name string) (map[string]string) {

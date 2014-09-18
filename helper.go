@@ -2,6 +2,7 @@ package browscap_go
 
 import (
 	"strings"
+	"regexp"
 	"bytes"
 )
 
@@ -28,6 +29,8 @@ var (
 		"*": ".*",
 		"?": ".",
 	}
+
+	rNoPrefix = regexp.MustCompile("[^a-z]")
 )
 
 func escapePattern(s string) string {
@@ -47,4 +50,18 @@ func inList(val []byte, list[][]byte) bool {
 		}
 	}
 	return false
+}
+
+func getPrefix(s string) (prefix string) {
+	if len(s) >= 2 {
+		prefix = s[0 : 2]
+	} else {
+		prefix = s
+	}
+	prefix = strings.ToLower(prefix)
+	// Fallback
+	if rNoPrefix.MatchString(prefix) {
+		prefix = "*"
+	}
+	return
 }
