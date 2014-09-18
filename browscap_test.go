@@ -32,3 +32,19 @@ func TestGetBrowser(t *testing.T) {
 		t.Errorf("Expected MacOSX but got %q", browser.Platform)
 	}
 }
+
+func TestGetBrowserYandex(t *testing.T) {
+	if browser, ok := GetBrowser("Yandex Browser 1.1"); !ok {
+		t.Error("Browser not found")
+	} else if browser.Browser != "Yandex Browser" {
+		t.Errorf("Expected Chrome but got %q", browser.Browser)
+	}
+}
+
+func TestGetBrowser360Spider(t *testing.T) {
+	if browser, ok := GetBrowser("360Spider"); !ok {
+		t.Error("Browser not found")
+	} else if browser.Browser != "360Spider" {
+		t.Errorf("Expected Chrome but got %q", browser.Browser)
+	}
+}
