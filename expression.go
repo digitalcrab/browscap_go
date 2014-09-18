@@ -6,23 +6,23 @@ import (
 )
 
 type expression struct {
-	idx	int
-	exp	*regexp.Regexp
-	val	[]byte
+	Name	string
+	exp		*regexp.Regexp
+	val		[]byte
 }
 
-func newRegexpExpression(idx int, val string) *expression {
+func newRegexpExpression(val string) *expression {
 	exp, _ := regexp.Compile("(?i)^" + escapePattern(val) + "$")
 	return &expression{
-		idx: idx,
-		exp: exp,
+		Name:	val,
+		exp:	exp,
 	}
 }
 
-func newCompareExpression(idx int, val []byte) *expression {
+func newCompareExpression(val string) *expression {
 	return &expression{
-		idx: idx,
-		val: bytes.ToLower(val),
+		Name:	val,
+		val:	bytes.ToLower([]byte(val)),
 	}
 }
 

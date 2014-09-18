@@ -42,12 +42,10 @@ func loadFromIniFile(path string) (*dictionary, error) {
 	}
 	defer file.Close()
 
-	// Store parsed section and it's indexes
-	sections := make(map[string]int)
 	dict := newDictionary()
 
 	buf := bufio.NewReader(file)
-	section := ""
+	sectionName := ""
 	sectionPrefix := ""
 
 	for {
@@ -80,33 +78,27 @@ func loadFromIniFile(path string) (*dictionary, error) {
 
 		// Section line
 		if bytes.HasPrefix(line, sStart) && bytes.HasSuffix(line, sEnd) {
-			section = string(line[1 : len(line)-1])
-			sectionPrefix = getPrefix(section)
+			sectionName = string(line[1 : len(line)-1])
+			sectionPrefix = getPrefix(sectionName)
 			continue
 		}
 
 		// Create section
-		idx, ok := sections[section]
-		if !ok {
-			// Append to sorted list
-			dict.sorted = append(dict.sorted, newSection(section))
-			// Save index
-			idx = len(dict.sorted) - 1
-			// Save parsed
-			sections[section] = idx
+		if _, ok := dict.mapped[sectionName]; !ok {
 			// Save mapped
-			dict.mapped[section] = dict.sorted[idx]
+			dict.mapped[sectionName] = make(section)
+
 			// Create prefix for section
 			if _, exists := dict.expressions[sectionPrefix]; !exists {
 				dict.expressions[sectionPrefix] = []*expression{}
 			}
+
 			// Build expression
 			var ee *expression
-			ss := []byte(section)
-			if bytes.IndexAny(ss, "*?") != -1 {
-				ee = newRegexpExpression(idx, section)
+			if bytes.IndexAny([]byte(sectionName), "*?") != -1 {
+				ee = newRegexpExpression(sectionName)
 			} else {
-				ee = newCompareExpression(idx, ss)
+				ee = newCompareExpression(sectionName)
 			}
 			dict.expressions[sectionPrefix] = append(dict.expressions[sectionPrefix], ee)
 		}
@@ -129,7 +121,7 @@ func loadFromIniFile(path string) (*dictionary, error) {
 			val = bytes.Trim(val, `'`)
 		}
 
-		dict.sorted[idx].Data[string(key)] = string(val)
+		dict.mapped[sectionName][string(key)] = string(val)
 	}
 
 	return dict, nil

@@ -1,28 +1,16 @@
 package browscap_go
 
 type dictionary struct {
-	sorted		[]*section
 	expressions	map[string][]*expression
-	mapped		map[string]*section
+	mapped		map[string]section
 }
 
-type section struct {
-	Name	string
-	Data	map[string]string
-}
+type section map[string]string
 
 func newDictionary() *dictionary {
 	return &dictionary{
-		sorted:			[]*section{},
 		expressions:	make(map[string][]*expression),
-		mapped:			make(map[string]*section),
-	}
-}
-
-func newSection(name string) *section {
-	return &section{
-		Name:	name,
-		Data:	make(map[string]string),
+		mapped:			make(map[string]section),
 	}
 }
 
@@ -31,7 +19,7 @@ func (self *dictionary) findData(name string) (map[string]string) {
 
 	if item, found := self.mapped[name]; found {
 		// Parent's data
-		if parentName, hasParent := item.Data["Parent"]; hasParent {
+		if parentName, hasParent := item["Parent"]; hasParent {
 			parentData := self.findData(parentName)
 			if len(parentData) > 0 {
 				for k, v := range parentData {
@@ -43,8 +31,8 @@ func (self *dictionary) findData(name string) (map[string]string) {
 			}
 		}
 		// It's item data
-		if len(item.Data) > 0 {
-			for k, v := range item.Data {
+		if len(item) > 0 {
+			for k, v := range item {
 				if k == "Parent" {
 					continue
 				}

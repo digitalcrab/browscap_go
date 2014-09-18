@@ -31,6 +31,7 @@ var (
 	}
 
 	rNoPrefix = regexp.MustCompile("[^a-z]")
+	lenPrefix = 3
 )
 
 func escapePattern(s string) string {
@@ -53,8 +54,8 @@ func inList(val []byte, list[][]byte) bool {
 }
 
 func getPrefix(s string) (prefix string) {
-	if len(s) >= 2 {
-		prefix = s[0 : 2]
+	if len(s) >= lenPrefix {
+		prefix = s[0 : lenPrefix]
 	} else {
 		prefix = s
 	}
