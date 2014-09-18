@@ -1,6 +1,9 @@
 package browscap_go
 
-import "strings"
+import (
+	"strings"
+	"bytes"
+)
 
 var (
 	regexReplace = map[string]string{
@@ -37,3 +40,11 @@ func escapePattern(s string) string {
 	return s
 }
 
+func inList(val []byte, list[][]byte) bool {
+	for _, v := range list {
+		if bytes.Equal(val, v) {
+			return true
+		}
+	}
+	return false
+}

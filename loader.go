@@ -16,6 +16,22 @@ var (
 	sEqual		= []byte{'='}	// equal signal
 	sQuote1		= []byte{'"'}	// quote " signal
 	sQuote2		= []byte{'\''}	// quote ' signal
+
+	// To reduce memory usage we will keep only next keys
+	keepKeys	= [][]byte{
+		// Required
+		[]byte{'P','a','r','e','n','t'},
+
+		// Used in Browser
+		[]byte{'B','r','o','w','s','e','r'},
+		[]byte{'V','e','r','s','i','o','n'},
+		[]byte{'B','r','o','w','s','e','r','_','T','y','p','e'},
+		[]byte{'P','l','a','t','f','o','r','m'},
+		[]byte{'P','l','a','t','f','o','r','m','_','V','e','r','s','i','o','n'},
+		[]byte{'D','e','v','i','c','e','_','T','y','p','e'},
+		[]byte{'D','e','v','i','c','e','_','C','o','d','e','_','N','a','m','e'},
+		[]byte{'D','e','v','i','c','e','_','B','r','a','n','d','_','N','a','m','e'},
+	}
 )
 
 func loadFromIniFile(path string) (*dictionary, error) {
@@ -82,6 +98,12 @@ func loadFromIniFile(path string) (*dictionary, error) {
 		// Key => Value
 		kv := bytes.SplitN(line, sEqual, 2)
 
+		// Parse Key
+		key := bytes.TrimSpace(kv[0])
+		if !inList(key, keepKeys) {
+			continue
+		}
+
 		// Parse Value
 		val := bytes.TrimSpace(kv[1])
 		if bytes.HasPrefix(val, sQuote1) {
@@ -91,9 +113,7 @@ func loadFromIniFile(path string) (*dictionary, error) {
 			val = bytes.Trim(val, `'`)
 		}
 
-		// Parse Key
-		key := string(bytes.TrimSpace(kv[0]))
-		dict.sorted[idx].Data[key] = string(val)
+		dict.sorted[idx].Data[string(key)] = string(val)
 	}
 
 	return dict, nil
