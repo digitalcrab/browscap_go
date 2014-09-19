@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/fromYukki/browscap_go"
+	"runtime"
 )
 
 func main() {
@@ -12,6 +13,11 @@ func main() {
 		panic(err)
 	}
 
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+
+	fmt.Printf("%d bytes\n", ms.Alloc)
+
 	http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
 			if browser, ok := browscap_go.GetBrowser(r.UserAgent()); ok {
 				w.WriteHeader(200)
@@ -19,6 +25,7 @@ func main() {
 			} else {
 				w.WriteHeader(404)
 			}
+			fmt.Printf("%d bytes\n", ms.Alloc)
 		})
 	http.ListenAndServe(":8080", nil)
 }
