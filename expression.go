@@ -1,21 +1,20 @@
 package browscap_go
 
 import (
-	"regexp"
 	"bytes"
+	"github.com/fromYukki/browscap_go/re0"
 )
 
 type expression struct {
 	Name	string
-	exp		*regexp.Regexp
+	exp		re0.Expression
 	val		[]byte
 }
 
 func newRegexpExpression(val string) *expression {
-	exp, _ := regexp.Compile("(?i)^" + escapePattern(val) + "$")
 	return &expression{
 		Name:	val,
-		exp:	exp,
+		exp:	re0.Compile(bytes.ToLower([]byte(val))),
 	}
 }
 
@@ -26,12 +25,12 @@ func newCompareExpression(val string) *expression {
 	}
 }
 
-func (self *expression) Match(val1, val2 []byte) bool {
+func (self *expression) Match(val []byte) bool {
 	if self.exp != nil {
-		return self.exp.Match(val1)
+		return self.exp.Match(val)
 	}
 	if len(self.val) > 0 {
-		return bytes.Equal(self.val, val2)
+		return bytes.Equal(self.val, val)
 	}
 	return false
 }

@@ -23,7 +23,6 @@ func TestGetBrowser(t *testing.T) {
 	} else if browser.Platform != "MacOSX" {
 		t.Errorf("Expected MacOSX but got %q", browser.Platform)
 	}
-	//t.Logf("Iterations: %d", iterations)
 }
 
 func TestGetBrowserYandex(t *testing.T) {
@@ -32,7 +31,6 @@ func TestGetBrowserYandex(t *testing.T) {
 	} else if browser.Browser != "Yandex Browser" {
 		t.Errorf("Expected Chrome but got %q", browser.Browser)
 	}
-	//t.Logf("Iterations: %d", iterations)
 }
 
 func TestGetBrowser360Spider(t *testing.T) {
@@ -41,5 +39,4 @@ func TestGetBrowser360Spider(t *testing.T) {
 	} else if browser.Browser != "360Spider" {
 		t.Errorf("Expected Chrome but got %q", browser.Browser)
 	}
-	//t.Logf("Iterations: %d", iterations)
 }

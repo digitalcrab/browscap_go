@@ -8,7 +8,6 @@ import (
 var (
 	dict		*dictionary
 	initialized bool
-	//iterations	int
 )
 
 func InitBrowsCap(path string, force bool) error {
@@ -27,6 +26,10 @@ func InitBrowsCap(path string, force bool) error {
 }
 
 func GetBrowser(userAgent string) (browser *Browser, ok bool) {
+	if !initialized {
+		return
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			browser = nil
@@ -34,31 +37,26 @@ func GetBrowser(userAgent string) (browser *Browser, ok bool) {
 		}
 	}()
 
-	//iterations = 0
-
-	agent1 := []byte(userAgent)
-	agent2 := bytes.ToLower(agent1)
+	agent := bytes.ToLower([]byte(userAgent))
 	prefix := getPrefix(userAgent)
 
 	// Main search
-	if browser, ok = getBrowser(prefix, agent1, agent2); ok {
+	if browser, ok = getBrowser(prefix, agent); ok {
 		return
 	}
 
 	// Fallback
 	if prefix != "*" {
-		browser, ok = getBrowser("*", agent1, agent2)
+		browser, ok = getBrowser("*", agent)
 	}
 
 	return
 }
 
-func getBrowser(prefix string, agent1, agent2 []byte) (browser *Browser, ok bool) {
+func getBrowser(prefix string, agent []byte) (browser *Browser, ok bool) {
 	if expressions, exists := dict.expressions[prefix]; exists {
-		//fmt.Printf("Len: %d\n", len(expressions))
 		for _, exp := range expressions {
-			//iterations++
-			if exp.Match(agent1, agent2) {
+			if exp.Match(agent) {
 				data := dict.findData(exp.Name)
 				browser = extractBrowser(data)
 				ok = true
