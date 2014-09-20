@@ -27,7 +27,7 @@ func main() {
 		panic(err)
 	}
 	
-	browser, ok := bgo.GetBrowser("")
+	browser, ok := bgo.GetBrowser("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36")
 	if !ok || browser == nil {
     	panic("Browser not found")
 	} else {
