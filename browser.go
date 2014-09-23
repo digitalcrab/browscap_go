@@ -1,13 +1,20 @@
 package browscap_go
 
+import "strings"
+
 type Browser struct {
 	Browser			string
 	BrowserVersion	string
+	BrowserMajorVer	string
+	BrowserMinorVer	string
 	// Browser, Application, Bot/Crawler, Useragent Anonymizer, Offline Browser,
 	// Multimedia Player, Library, Feed Reader, Email Client or unknown
 	BrowserType		string
+
 	Platform		string
+	PlatformShort	string
 	PlatformVersion	string
+
 	// Mobile Phone, Mobile Device, Tablet, Desktop, TV Device, Console,
 	// FonePad, Ebook Reader, Car Entertainment System or unknown
 	DeviceType		string
@@ -18,21 +25,39 @@ type Browser struct {
 func extractBrowser(data map[string]string) *Browser {
 	browser := &Browser{}
 
+	// Browser
 	if item, ok := data["Browser"]; ok {
 		browser.Browser = item
 	}
 	if item, ok := data["Version"]; ok {
 		browser.BrowserVersion = item
 	}
+	if item, ok := data["MajorVer"]; ok {
+		browser.BrowserMajorVer = item
+	}
+	if item, ok := data["MinorVer"]; ok {
+		browser.BrowserMinorVer = item
+	}
 	if item, ok := data["Browser_Type"]; ok {
 		browser.BrowserType = item
 	}
+
+	// Platform
 	if item, ok := data["Platform"]; ok {
 		browser.Platform = item
+		browser.PlatformShort = strings.ToLower(item)
+
+		if strings.HasPrefix(browser.PlatformShort, "win") {
+			browser.PlatformShort = "win"
+		} else if strings.HasPrefix(browser.PlatformShort, "mac") {
+			browser.PlatformShort = "mac"
+		}
 	}
 	if item, ok := data["Platform_Version"]; ok {
 		browser.PlatformVersion = item
 	}
+
+	// Device
 	if item, ok := data["Device_Type"]; ok {
 		browser.DeviceType = item
 	}
