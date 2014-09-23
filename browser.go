@@ -1,6 +1,10 @@
 package browscap_go
 
-import "strings"
+import (
+	"strings"
+	"log"
+	"fmt"
+)
 
 type Browser struct {
 	Browser			string
@@ -24,6 +28,14 @@ type Browser struct {
 
 func extractBrowser(data map[string]string) *Browser {
 	browser := &Browser{}
+
+	if debug {
+		fmt.Println("= Browser ==================")
+		for k, v := range data {
+			fmt.Printf("%s = %s\n", k, v)
+		}
+		fmt.Println("============================")
+	}
 
 	// Browser
 	if item, ok := data["Browser"]; ok {

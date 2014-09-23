@@ -8,7 +8,12 @@ import (
 var (
 	dict		*dictionary
 	initialized bool
+	debug		bool
 )
+
+func Debug(val bool) {
+	debug = val
+}
 
 func InitBrowsCap(path string, force bool) error {
 	if initialized && !force {
