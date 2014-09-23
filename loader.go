@@ -26,6 +26,8 @@ var (
 		// Used in Browser
 		[]byte{'B','r','o','w','s','e','r'},
 		[]byte{'V','e','r','s','i','o','n'},
+		[]byte{'M','a','j','o','r','V','e','r'},
+		[]byte{'M','i','n','o','r','V','e','r'},
 		[]byte{'B','r','o','w','s','e','r','_','T','y','p','e'},
 		[]byte{'P','l','a','t','f','o','r','m'},
 		[]byte{'P','l','a','t','f','o','r','m','_','V','e','r','s','i','o','n'},
