@@ -1,8 +1,7 @@
 package browscap_go
 
 import (
-	"strings"
-	"log"
+	"strings"Fix
 	"fmt"
 )
 
