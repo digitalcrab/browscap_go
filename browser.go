@@ -53,3 +53,19 @@ func (self *Browser) IsCrawler() bool {
 func (self *Browser) IsMobile() bool {
 	return self.DeviceType == "Mobile Phone" || self.DeviceType == "Mobile Device"
 }
+
+func (self *Browser) IsTablet() bool {
+	return self.DeviceType == "Tablet" || self.DeviceType == "FonePad" || self.DeviceType == "Ebook Reader"
+}
+
+func (self *Browser) IsDesktop() bool {
+	return self.DeviceType == "Desktop"
+}
+
+func (self *Browser) IsConsole() bool {
+	return self.DeviceType == "Console"
+}
+
+func (self *Browser) IsTv() bool {
+	return self.DeviceType == "TV Device"
+}
