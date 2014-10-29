@@ -6,22 +6,22 @@ import (
 )
 
 type expression struct {
-	Name	string
-	exp		re0.Expression
-	val		[]byte
+	Name string
+	exp  re0.Expression
+	val  []byte
 }
 
 func newRegexpExpression(val string) *expression {
 	return &expression{
-		Name:	val,
-		exp:	re0.Compile(bytes.ToLower([]byte(val))),
+		Name: val,
+		exp:  re0.Compile(bytes.ToLower([]byte(val))),
 	}
 }
 
 func newCompareExpression(val string) *expression {
 	return &expression{
-		Name:	val,
-		val:	bytes.ToLower([]byte(val)),
+		Name: val,
+		val:  bytes.ToLower([]byte(val)),
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	TEST_INI_FILE = "./test-data/full_php_browscap.ini"
+	TEST_INI_FILE   = "./test-data/full_php_browscap.ini"
 	TEST_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36"
 )
 
@@ -38,5 +38,38 @@ func TestGetBrowser360Spider(t *testing.T) {
 		t.Error("Browser not found")
 	} else if browser.Browser != "360Spider" {
 		t.Errorf("Expected Chrome but got %q", browser.Browser)
+	}
+}
+
+func TestLastVersion(t *testing.T) {
+	version, err := LastVersion()
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	if version == "" {
+		t.Fatalf("Version not found")
+	}
+	t.Logf("Last version is %q, current version: %q", version, InitializedVersion())
+}
+
+func TestDownload(t *testing.T) {
+	version, err := LastVersion()
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	if version != InitializedVersion() {
+		t.Logf("Start downloading version %q", version)
+		tmpFile := "/tmp/browscap_go_TestDownload.ini"
+		if err = DownloadFile(tmpFile); err != nil {
+			t.Fatalf("%v", err)
+		}
+
+		t.Logf("Initializing with new version")
+		InitBrowsCap(tmpFile, true)
+
+		if version != InitializedVersion() {
+			t.Fatalf("New file is wrong")
+		}
 	}
 }

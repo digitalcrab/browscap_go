@@ -1,20 +1,20 @@
 package browscap_go
 
 type dictionary struct {
-	expressions	map[string][]*expression
-	mapped		map[string]section
+	expressions map[string][]*expression
+	mapped      map[string]section
 }
 
 type section map[string]string
 
 func newDictionary() *dictionary {
 	return &dictionary{
-		expressions:	make(map[string][]*expression),
-		mapped:			make(map[string]section),
+		expressions: make(map[string][]*expression),
+		mapped:      make(map[string]section),
 	}
 }
 
-func (self *dictionary) findData(name string) (map[string]string) {
+func (self *dictionary) findData(name string) map[string]string {
 	res := make(map[string]string)
 
 	if item, found := self.mapped[name]; found {

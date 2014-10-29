@@ -1,28 +1,28 @@
 package browscap_go
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 type Browser struct {
-	Browser			string
-	BrowserVersion	string
-	BrowserMajorVer	string
-	BrowserMinorVer	string
+	Browser         string
+	BrowserVersion  string
+	BrowserMajorVer string
+	BrowserMinorVer string
 	// Browser, Application, Bot/Crawler, Useragent Anonymizer, Offline Browser,
 	// Multimedia Player, Library, Feed Reader, Email Client or unknown
-	BrowserType		string
+	BrowserType string
 
-	Platform		string
-	PlatformShort	string
-	PlatformVersion	string
+	Platform        string
+	PlatformShort   string
+	PlatformVersion string
 
 	// Mobile Phone, Mobile Device, Tablet, Desktop, TV Device, Console,
 	// FonePad, Ebook Reader, Car Entertainment System or unknown
-	DeviceType		string
-	DeviceName		string
-	DeviceBrand		string
+	DeviceType  string
+	DeviceName  string
+	DeviceBrand string
 }
 
 func extractBrowser(data map[string]string) *Browser {

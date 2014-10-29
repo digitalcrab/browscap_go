@@ -1,39 +1,39 @@
 package browscap_go
 
 import (
-	"bytes"
 	"bufio"
-	"os"
+	"bytes"
 	"io"
+	"os"
 )
 
 var (
 	// Ini
-	sEmpty		= []byte{}		// empty signal
-	nComment	= []byte{'#'}	// number signal
-	sComment	= []byte{';'}	// semicolon signal
-	sStart		= []byte{'['}	// section start signal
-	sEnd		= []byte{']'}	// section end signal
-	sEqual		= []byte{'='}	// equal signal
-	sQuote1		= []byte{'"'}	// quote " signal
-	sQuote2		= []byte{'\''}	// quote ' signal
+	sEmpty   = []byte{}     // empty signal
+	nComment = []byte{'#'}  // number signal
+	sComment = []byte{';'}  // semicolon signal
+	sStart   = []byte{'['}  // section start signal
+	sEnd     = []byte{']'}  // section end signal
+	sEqual   = []byte{'='}  // equal signal
+	sQuote1  = []byte{'"'}  // quote " signal
+	sQuote2  = []byte{'\''} // quote ' signal
 
 	// To reduce memory usage we will keep only next keys
-	keepKeys	= [][]byte{
+	keepKeys = [][]byte{
 		// Required
-		[]byte{'P','a','r','e','n','t'},
+		[]byte("Parent"),
 
 		// Used in Browser
-		[]byte{'B','r','o','w','s','e','r'},
-		[]byte{'V','e','r','s','i','o','n'},
-		[]byte{'M','a','j','o','r','V','e','r'},
-		[]byte{'M','i','n','o','r','V','e','r'},
-		[]byte{'B','r','o','w','s','e','r','_','T','y','p','e'},
-		[]byte{'P','l','a','t','f','o','r','m'},
-		[]byte{'P','l','a','t','f','o','r','m','_','V','e','r','s','i','o','n'},
-		[]byte{'D','e','v','i','c','e','_','T','y','p','e'},
-		[]byte{'D','e','v','i','c','e','_','C','o','d','e','_','N','a','m','e'},
-		[]byte{'D','e','v','i','c','e','_','B','r','a','n','d','_','N','a','m','e'},
+		[]byte("Browser"),
+		[]byte("Version"),
+		[]byte("MajorVer"),
+		[]byte("MinorVer"),
+		[]byte("Browser_Type"),
+		[]byte("Platform"),
+		[]byte("Platform_Version"),
+		[]byte("Device_Type"),
+		[]byte("Device_Code_Name"),
+		[]byte("Device_Brand_Name"),
 	}
 )
 
