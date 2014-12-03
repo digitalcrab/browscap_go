@@ -105,3 +105,19 @@ func (self *Browser) IsConsole() bool {
 func (self *Browser) IsTv() bool {
 	return self.DeviceType == "TV Device"
 }
+
+func (self *Browser) IsAndroid() bool {
+	return self.Platform == "Android"
+}
+
+func (self *Browser) IsIPhone() bool {
+	return self.Platform == "iOS" && self.DeviceName == "iPhone"
+}
+
+func (self *Browser) IsIPad() bool {
+	return self.Platform == "iOS" && self.DeviceName == "iPad"
+}
+
+func (self *Browser) IsWinPhone() bool {
+	return strings.Index(self.Platform, "WinPhone") != -1 || self.Platform == "WinMobile"
+}
