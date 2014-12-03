@@ -2,15 +2,16 @@ package re0
 
 import (
 	"bytes"
+	"fmt"
 )
 
 const (
-	TOKEN_MULTI		rune = '*'
-	TOKEN_SINGLE	rune = '?'
+	TOKEN_MULTI  rune = '*'
+	TOKEN_SINGLE rune = '?'
 
-	MODE_MULTI		int = 3
-	MODE_SINGLE		int = 2
-	MODE_STATIC		int = 1
+	MODE_MULTI  int = 3
+	MODE_SINGLE int = 2
+	MODE_STATIC int = 1
 )
 
 type Expression []iToken
@@ -21,18 +22,30 @@ type iToken interface {
 type tokenMulti struct {
 }
 
+func (t *tokenMulti) String() string {
+	return "multi: any number of any chars"
+}
+
 type tokenSingle struct {
-	count	int
+	count int
+}
+
+func (t *tokenSingle) String() string {
+	return fmt.Sprintf("single: %d of any chars", t.count)
 }
 
 type tokenStatic struct {
-	buf	*bytes.Buffer
+	buf *bytes.Buffer
+}
+
+func (t *tokenStatic) String() string {
+	return fmt.Sprintf("static: %q", t.buf.String())
 }
 
 type parserState struct {
-	lastToken	iToken
-	lastMode	int
-	exp			Expression
+	lastToken iToken
+	lastMode  int
+	exp       Expression
 }
 
 func (self *parserState) process(r rune) {
@@ -94,7 +107,7 @@ func (self *parserState) modeByR(r rune) int {
 	return MODE_STATIC
 }
 
-func (self *parserState) last()  {
+func (self *parserState) last() {
 	// save prev token
 	if self.lastToken != nil {
 		self.exp = append(self.exp, self.lastToken)
@@ -102,7 +115,7 @@ func (self *parserState) last()  {
 }
 
 func (self *parserState) isMultiOrSingle(e iToken) bool {
-	_, ok1 := e.(*tokenMulti);
+	_, ok1 := e.(*tokenMulti)
 	_, ok2 := e.(*tokenSingle)
 	return ok1 || ok2
 }
@@ -115,7 +128,6 @@ func (self Expression) Match(s []byte) bool {
 		switch t := e.(type) {
 		case *tokenMulti:
 			skip = true
-			continue
 		case *tokenSingle:
 			if got := reader.Next(t.count); len(got) != t.count {
 				return false
@@ -132,7 +144,7 @@ func (self Expression) Match(s []byte) bool {
 				}
 			} else {
 				// get lat
-				ind := bytes.LastIndex(reader.Bytes(), expect)
+				ind := bytes.Index(reader.Bytes(), expect)
 				if ind == -1 {
 					return false
 				}
@@ -150,7 +162,7 @@ func (self Expression) Match(s []byte) bool {
 
 func Compile(s []byte) Expression {
 	state := &parserState{
-		exp: Expression{},
+		exp:      Expression{},
 		lastMode: -1,
 	}
 	reader := bytes.NewReader(s)
@@ -165,9 +177,9 @@ func Compile(s []byte) Expression {
 	state.last()
 
 	// check if multi and single are near to each other
-	checkMulti:
+checkMulti:
 	for i, e := range state.exp {
-		if len(state.exp) - 1 > i && state.isMultiOrSingle(e) && state.isMultiOrSingle(state.exp[i+1]) {
+		if len(state.exp)-1 > i && state.isMultiOrSingle(e) && state.isMultiOrSingle(state.exp[i+1]) {
 			state.exp = append(state.exp[:i], state.exp[i+1:]...)
 			goto checkMulti
 		}

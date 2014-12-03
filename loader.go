@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"sort"
 )
 
 var (
@@ -124,6 +125,13 @@ func loadFromIniFile(path string) (*dictionary, error) {
 		}
 
 		dict.mapped[sectionName][string(key)] = string(val)
+	}
+
+	// Order expressions by length
+	for prefix := range dict.expressions {
+		expressions := dict.expressions[prefix]
+		sort.Sort(expressionByNameLen(expressions))
+		dict.expressions[prefix] = expressions
 	}
 
 	return dict, nil

@@ -34,3 +34,17 @@ func (self *expression) Match(val []byte) bool {
 	}
 	return false
 }
+
+type expressionByNameLen []*expression
+
+func (el expressionByNameLen) Len() int {
+	return len(el)
+}
+
+func (el expressionByNameLen) Less(i, j int) bool {
+	return len(el[i].Name) > len(el[j].Name)
+}
+
+func (el expressionByNameLen) Swap(i, j int) {
+	el[i], el[j] = el[j], el[i]
+}
