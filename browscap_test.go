@@ -1,6 +1,9 @@
 package browscap_go
 
 import (
+	"fmt"
+	"io/ioutil"
+	"strings"
 	"testing"
 )
 
@@ -81,6 +84,25 @@ func TestDownload(t *testing.T) {
 
 		if version != InitializedVersion() {
 			t.Fatalf("New file is wrong")
+		}
+	}
+}
+
+func BenchmarkGetBrowser(b *testing.B) {
+	data, err := ioutil.ReadFile("test-data/user_agents_sample.txt")
+	if err != nil {
+		b.Error(err)
+	}
+
+	uas := strings.Split(strings.TrimSpace(string(data)), "\n")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		idx := i % len(uas)
+
+		_, ok := GetBrowser(uas[idx])
+		if !ok {
+			fmt.Println(uas[idx])
 		}
 	}
 }
