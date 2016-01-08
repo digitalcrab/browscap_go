@@ -15,8 +15,8 @@ func NewExpressionTree() *ExpressionTree {
 	}
 }
 
-func (r *ExpressionTree) Find(userAgent string) string {
-	res, _ := r.root.findBest([]byte(userAgent), 0)
+func (r *ExpressionTree) Find(userAgent []byte) string {
+	res, _ := r.root.findBest(userAgent, 0)
 	return res
 }
 

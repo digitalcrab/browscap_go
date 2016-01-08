@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
+	"unicode"
 )
 
 const (
@@ -94,7 +94,7 @@ func GetBrowser(userAgent string) (browser *Browser, ok bool) {
 		return
 	}
 
-	agent := strings.ToLower(userAgent)
+	agent := mapToBytes(unicode.ToLower, userAgent)
 	name := dict.tree.Find(agent)
 	if name == "" {
 		return
