@@ -2,10 +2,14 @@ package browscap_go
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
 type Browser struct {
+	built  bool   // has complete data from parents
+	parent string //name of the parent
+
 	Browser         string
 	BrowserVersion  string
 	BrowserMajorVer string
@@ -23,6 +27,75 @@ type Browser struct {
 	DeviceType  string
 	DeviceName  string
 	DeviceBrand string
+}
+
+func (browser *Browser) build(browsers map[string]*Browser) {
+	if browser.built {
+		return
+	}
+
+	n := reflect.ValueOf(*browser).NumField()
+
+	current := reflect.ValueOf(browser)
+	parent := browser.parent
+	for parent != "" {
+		b, ok := browsers[parent]
+		if !ok {
+			break
+		}
+
+		parentObj := reflect.ValueOf(b)
+		for i := 0; i < n; i++ {
+			cField := current.Elem().Field(i)
+			if cField.String() != "" {
+				continue
+			}
+
+			pField := parentObj.Elem().Field(i)
+			if pField.String() == "" {
+				continue
+			}
+
+			cField.SetString(pField.String())
+		}
+
+		parent = b.parent
+	}
+
+	browser.built = true
+}
+
+func (browser *Browser) setValue(key, item string) {
+	if key == "Parent" {
+		browser.parent = item
+	} else if key == "Browser" {
+		browser.Browser = item
+	} else if key == "Version" {
+		browser.BrowserVersion = item
+	} else if key == "MajorVer" {
+		browser.BrowserMajorVer = item
+	} else if key == "MinorVer" {
+		browser.BrowserMinorVer = item
+	} else if key == "Browser_Type" {
+		browser.BrowserType = item
+	} else if key == "Platform" {
+		browser.Platform = item
+		browser.PlatformShort = strings.ToLower(item)
+
+		if strings.HasPrefix(browser.PlatformShort, "win") {
+			browser.PlatformShort = "win"
+		} else if strings.HasPrefix(browser.PlatformShort, "mac") {
+			browser.PlatformShort = "mac"
+		}
+	} else if key == "Platform_Version" {
+		browser.PlatformVersion = item
+	} else if key == "Device_Type" {
+		browser.DeviceType = item
+	} else if key == "Device_Code_Name" {
+		browser.DeviceName = item
+	} else if key == "Device_Brand_Name" {
+		browser.DeviceBrand = item
+	}
 }
 
 func extractBrowser(data map[string]string) *Browser {

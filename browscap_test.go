@@ -1,7 +1,6 @@
 package browscap_go
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -88,6 +87,12 @@ func TestDownload(t *testing.T) {
 	}
 }
 
+func BenchmarkInit(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		InitBrowsCap(TEST_INI_FILE, true)
+	}
+}
+
 func BenchmarkGetBrowser(b *testing.B) {
 	data, err := ioutil.ReadFile("test-data/user_agents_sample.txt")
 	if err != nil {
@@ -102,7 +107,7 @@ func BenchmarkGetBrowser(b *testing.B) {
 
 		_, ok := GetBrowser(uas[idx])
 		if !ok {
-			fmt.Println(uas[idx])
+			b.Errorf("User agent not recognized: %s", uas[idx])
 		}
 	}
 }

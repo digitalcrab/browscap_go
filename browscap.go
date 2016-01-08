@@ -1,11 +1,11 @@
 package browscap_go
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 const (
@@ -33,10 +33,6 @@ func InitBrowsCap(path string, force bool) error {
 	// Load ini file
 	if dict, err = loadFromIniFile(path); err != nil {
 		return fmt.Errorf("browscap: An error occurred while reading file, %v ", err)
-	}
-
-	if verDictionary, exists := dict.mapped["GJK_Browscap_Version"]; exists {
-		version = verDictionary["Version"]
 	}
 
 	initialized = true
@@ -98,39 +94,16 @@ func GetBrowser(userAgent string) (browser *Browser, ok bool) {
 		return
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			browser = nil
-			ok = false
-		}
-	}()
-
-	agent := bytes.ToLower([]byte(userAgent))
-	prefix := getPrefix(userAgent)
-
-	// Main search
-	if browser, ok = getBrowser(prefix, agent); ok {
+	agent := strings.ToLower(userAgent)
+	name := dict.tree.Find(agent)
+	if name == "" {
 		return
 	}
 
-	// Fallback
-	if prefix != "*" {
-		browser, ok = getBrowser("*", agent)
+	browser = dict.getBrowser(name)
+	if browser != nil {
+		ok = true
 	}
 
-	return
-}
-
-func getBrowser(prefix string, agent []byte) (browser *Browser, ok bool) {
-	if expressions, exists := dict.expressions[prefix]; exists {
-		for _, exp := range expressions {
-			if exp.Match(agent) {
-				data := dict.findData(exp.Name)
-				browser = extractBrowser(data)
-				ok = true
-				return
-			}
-		}
-	}
 	return
 }
