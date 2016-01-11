@@ -71,7 +71,7 @@ func (t *Token) MatchOne(r []byte) (bool, []byte) {
 	}
 
 	if t.multi {
-		ind := bytes.Index(r, t.match)
+		ind := smallBytesIndex(r, t.match)
 		if ind == -1 {
 			return false, nil
 		}
@@ -94,8 +94,7 @@ func (ps *parserState) process(r rune) {
 	mode := ps.modeByR(r)
 
 	if ps.lastToken == nil {
-		match := []byte{}
-		ps.lastToken = &Token{match: match}
+		ps.lastToken = &Token{match: make([]byte, 0, 16)}
 	}
 
 	modMode := false
@@ -112,8 +111,7 @@ func (ps *parserState) process(r rune) {
 	if ps.lastMode > 0 && modMode && !lastModMode {
 		ps.exp = append(ps.exp, ps.lastToken)
 
-		match := []byte{}
-		ps.lastToken = &Token{match: match}
+		ps.lastToken = &Token{match: make([]byte, 0, 16)}
 	}
 
 	// update

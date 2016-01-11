@@ -1,8 +1,8 @@
 package browscap_go
 
 import (
-	"bytes"
 	"sort"
+	"unicode"
 )
 
 type ExpressionTree struct {
@@ -21,7 +21,7 @@ func (r *ExpressionTree) Find(userAgent []byte) string {
 }
 
 func (r *ExpressionTree) Add(name string) {
-	exp := CompileExpression(bytes.ToLower([]byte(name)))
+	exp := CompileExpression(mapToBytes(unicode.ToLower, name))
 
 	last := r.root
 	for _, e := range exp {
@@ -49,13 +49,13 @@ func (r *ExpressionTree) Add(name string) {
 			}
 			if e.Fuzzy() {
 				last.nodesFuzzy = append(last.nodesFuzzy, found)
-				sort.Sort(sort.Reverse(last.nodesFuzzy))
+				sort.Sort(last.nodesFuzzy)
 			} else {
 				if last.nodesPure == nil {
 					last.nodesPure = map[byte]nodes{}
 				}
 				last.nodesPure[shard] = append(last.nodesPure[shard], found)
-				sort.Sort(sort.Reverse(last.nodesPure[shard]))
+				sort.Sort(last.nodesPure[shard])
 			}
 		}
 		last = found
@@ -164,7 +164,8 @@ func (n nodes) Len() int {
 }
 
 func (n nodes) Less(i, j int) bool {
-	return n[i].topScore < n[j].topScore
+	// Sort reverse
+	return n[i].topScore > n[j].topScore
 }
 
 func (n nodes) Swap(i, j int) {
