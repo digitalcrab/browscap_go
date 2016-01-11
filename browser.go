@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 type Browser struct {
-	built  bool   // has complete data from parents
-	parent string //name of the parent
+	built   bool // has complete data from parents
+	buildMu sync.Mutex
+	parent  string //name of the parent
 
 	Browser         string
 	BrowserVersion  string
@@ -27,9 +29,23 @@ type Browser struct {
 	DeviceType  string
 	DeviceName  string
 	DeviceBrand string
+
+	Crawler string
+
+	Cookies    string
+	JavaScript string
+
+	RenderingEngineName    string
+	RenderingEngineVersion string
 }
 
 func (browser *Browser) build(browsers map[string]*Browser) {
+	if browser.built {
+		return
+	}
+
+	browser.buildMu.Lock()
+	defer browser.buildMu.Unlock()
 	if browser.built {
 		return
 	}
@@ -78,6 +94,12 @@ func (browser *Browser) setValue(key, item string) {
 		browser.BrowserMinorVer = item
 	} else if key == "Browser_Type" {
 		browser.BrowserType = item
+	} else if key == "JavaScript" {
+		browser.JavaScript = item
+	} else if key == "Cookies" {
+		browser.Cookies = item
+	} else if key == "Crawler" {
+		browser.Crawler = item
 	} else if key == "Platform" {
 		browser.Platform = item
 		browser.PlatformShort = strings.ToLower(item)
@@ -89,6 +111,10 @@ func (browser *Browser) setValue(key, item string) {
 		}
 	} else if key == "Platform_Version" {
 		browser.PlatformVersion = item
+	} else if key == "RenderingEngine_Name" {
+		browser.RenderingEngineName = item
+	} else if key == "RenderingEngine_Version" {
+		browser.RenderingEngineVersion = item
 	} else if key == "Device_Type" {
 		browser.DeviceType = item
 	} else if key == "Device_Code_Name" {
