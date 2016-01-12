@@ -21,7 +21,10 @@ func (r *ExpressionTree) Find(userAgent []byte) string {
 }
 
 func (r *ExpressionTree) Add(name string) {
-	exp := CompileExpression(mapToBytes(unicode.ToLower, name))
+	nameBytes := mapToBytes(unicode.ToLower, name)
+	defer bytesPool.Put(nameBytes)
+
+	exp := CompileExpression(nameBytes)
 
 	last := r.root
 	for _, e := range exp {
@@ -72,6 +75,7 @@ func (r *ExpressionTree) Add(name string) {
 		}
 		last = last.parent
 	}
+
 }
 
 type node struct {

@@ -1,6 +1,28 @@
 package browscap_go
 
-import "unicode/utf8"
+import (
+	"sync"
+	"unicode/utf8"
+)
+
+var (
+	bytesPool = &sync.Pool{}
+	minCap    = 128
+)
+
+func getBytes(size int) []byte {
+	if b := bytesPool.Get(); b != nil {
+		bs := b.([]byte)
+		if cap(bs) >= size {
+			return bs[:size]
+		}
+	}
+	c := size
+	if c < minCap {
+		c = minCap
+	}
+	return make([]byte, size, c)
+}
 
 func mapToBytes(mapping func(rune) rune, s string) []byte {
 	// In the worst case, the string can grow when mapped, making
@@ -18,7 +40,7 @@ func mapToBytes(mapping func(rune) rune, s string) []byte {
 			if r == c {
 				continue
 			}
-			b = make([]byte, maxbytes)
+			b = getBytes(maxbytes)
 			nbytes = copy(b, s[:i])
 		}
 		if r >= 0 {
@@ -29,7 +51,7 @@ func mapToBytes(mapping func(rune) rune, s string) []byte {
 			if nbytes+wid > maxbytes {
 				// Grow the buffer.
 				maxbytes = maxbytes*2 + utf8.UTFMax
-				nb := make([]byte, maxbytes)
+				nb := getBytes(maxbytes)
 				copy(nb, b[0:nbytes])
 				b = nb
 			}
@@ -37,7 +59,9 @@ func mapToBytes(mapping func(rune) rune, s string) []byte {
 		}
 	}
 	if b == nil {
-		return []byte(s)
+		b = getBytes(maxbytes)
+		copy(b, s)
+		return b
 	}
 	return b[0:nbytes]
 }

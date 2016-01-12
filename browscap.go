@@ -95,6 +95,8 @@ func GetBrowser(userAgent string) (browser *Browser, ok bool) {
 	}
 
 	agent := mapToBytes(unicode.ToLower, userAgent)
+	defer bytesPool.Put(agent)
+
 	name := dict.tree.Find(agent)
 	if name == "" {
 		return
