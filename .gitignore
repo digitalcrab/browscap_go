@@ -1,3 +1,5 @@
 # ide
 .idea
 
+# vim
+*.sw[pon]
