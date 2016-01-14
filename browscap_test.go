@@ -1,6 +1,8 @@
 package browscap_go
 
 import (
+	"io/ioutil"
+	"strings"
 	"testing"
 )
 
@@ -23,6 +25,12 @@ func TestGetBrowser(t *testing.T) {
 		t.Errorf("Expected Chrome but got %q", browser.Browser)
 	} else if browser.Platform != "MacOSX" {
 		t.Errorf("Expected MacOSX but got %q", browser.Platform)
+	} else if browser.BrowserVersion != "37.0" {
+		t.Errorf("Expected 37.0 but got %q", browser.BrowserVersion)
+	} else if browser.RenderingEngineName != "Blink" {
+		t.Errorf("Expected Blink but got %q", browser.RenderingEngineName)
+	} else if browser.Crawler != "false" {
+		t.Errorf("Expected false but got %q", browser.Crawler)
 	}
 }
 
@@ -31,6 +39,10 @@ func TestGetBrowserIPhone(t *testing.T) {
 		t.Error("Browser not found")
 	} else if browser.DeviceName != "iPhone" {
 		t.Errorf("Expected iPhone but got %q", browser.DeviceName)
+	} else if browser.Platform != "iOS" {
+		t.Errorf("Expected iOS but got %q", browser.Platform)
+	} else if browser.PlatformVersion != "4.3" {
+		t.Errorf("Expected 4.3 but got %q", browser.PlatformVersion)
 	} else if browser.IsMobile() != true {
 		t.Errorf("Expected true but got %t", browser.IsMobile())
 	}
@@ -41,6 +53,8 @@ func TestGetBrowserYandex(t *testing.T) {
 		t.Error("Browser not found")
 	} else if browser.Browser != "Yandex Browser" {
 		t.Errorf("Expected Chrome but got %q", browser.Browser)
+	} else if browser.IsCrawler() != false {
+		t.Errorf("Expected false but got %t", browser.IsCrawler())
 	}
 }
 
@@ -49,10 +63,16 @@ func TestGetBrowser360Spider(t *testing.T) {
 		t.Error("Browser not found")
 	} else if browser.Browser != "360Spider" {
 		t.Errorf("Expected Chrome but got %q", browser.Browser)
+	} else if browser.IsCrawler() != true {
+		t.Errorf("Expected true but got %t", browser.IsCrawler())
 	}
 }
 
 func TestLastVersion(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	version, err := LastVersion()
 	if err != nil {
 		t.Fatalf("%v", err)
@@ -64,6 +84,10 @@ func TestLastVersion(t *testing.T) {
 }
 
 func TestDownload(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	version, err := LastVersion()
 	if err != nil {
 		t.Fatalf("%v", err)
@@ -81,6 +105,31 @@ func TestDownload(t *testing.T) {
 
 		if version != InitializedVersion() {
 			t.Fatalf("New file is wrong")
+		}
+	}
+}
+
+func BenchmarkInit(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		InitBrowsCap(TEST_INI_FILE, true)
+	}
+}
+
+func BenchmarkGetBrowser(b *testing.B) {
+	data, err := ioutil.ReadFile("test-data/user_agents_sample.txt")
+	if err != nil {
+		b.Error(err)
+	}
+
+	uas := strings.Split(strings.TrimSpace(string(data)), "\n")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		idx := i % len(uas)
+
+		_, ok := GetBrowser(uas[idx])
+		if !ok {
+			b.Errorf("User agent not recognized: %s", uas[idx])
 		}
 	}
 }
