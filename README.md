@@ -16,7 +16,7 @@ browsers and their capabilities, such as name, versions, Javascript support and 
 First of all you need initialize library with [browscap.ini](http://browscap.org/) file. 
 And then you can get Browser information as `Browser` structure.
 
-```
+```go
 import (
 	"fmt"
 	bgo "github.com/digitalcrab/browscap_go"
