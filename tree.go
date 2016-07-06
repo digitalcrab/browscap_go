@@ -9,6 +9,10 @@ type ExpressionTree struct {
 	root *node
 }
 
+func (r *ExpressionTree) Print() {
+
+}
+
 func NewExpressionTree() *ExpressionTree {
 	return &ExpressionTree{
 		root: &node{},
@@ -16,15 +20,16 @@ func NewExpressionTree() *ExpressionTree {
 }
 
 func (r *ExpressionTree) Find(userAgent []byte) string {
-	res, _ := r.root.findBest(userAgent, 0)
+	res, _ := r.root.findBest(userAgent, -1)
 	return res
 }
 
 func (r *ExpressionTree) Add(name string) {
 	nameBytes := mapToBytes(unicode.ToLower, name)
-	defer bytesPool.Put(nameBytes)
-
 	exp := CompileExpression(nameBytes)
+	bytesPool.Put(nameBytes)
+
+	score := int(len(name))
 
 	last := r.root
 	for _, e := range exp {
@@ -47,49 +52,43 @@ func (r *ExpressionTree) Add(name string) {
 		}
 		if found == nil {
 			found = &node{
-				token:  e,
-				parent: last,
+				token: e,
 			}
-			if e.Fuzzy() {
-				last.nodesFuzzy = append(last.nodesFuzzy, found)
-				sort.Sort(last.nodesFuzzy)
-			} else {
-				if last.nodesPure == nil {
-					last.nodesPure = map[byte]nodes{}
-				}
-				last.nodesPure[shard] = append(last.nodesPure[shard], found)
-				sort.Sort(last.nodesPure[shard])
-			}
+			last.addChild(found)
+		}
+		if score > found.topScore {
+			found.topScore = score
 		}
 		last = found
 	}
 
-	score := len(name)
-
 	last.name = name
 	last.score = score
-
-	for last != nil {
-		if score > last.topScore {
-			last.topScore = score
-		}
-		last = last.parent
-	}
-
 }
 
 type node struct {
 	name  string
 	score int
 
+	token Token
+
 	nodesPure  map[byte]nodes
 	nodesFuzzy nodes
+	topScore   int
+}
 
-	token    *Token
-	topScore int
-	parent   *node
-
-	lastMatch *node
+func (n *node) addChild(a *node) {
+	if a.token.Fuzzy() {
+		n.nodesFuzzy = append(n.nodesFuzzy, a)
+		sort.Sort(n.nodesFuzzy)
+	} else {
+		if n.nodesPure == nil {
+			n.nodesPure = map[byte]nodes{}
+		}
+		shard := a.token.Shard()
+		n.nodesPure[shard] = append(n.nodesPure[shard], a)
+		sort.Sort(n.nodesPure[shard])
+	}
 }
 
 func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
@@ -98,7 +97,7 @@ func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
 	}
 
 	match := false
-	if n.token != nil {
+	if n.token.match != nil {
 		match, s = n.token.MatchOne(s)
 		if !match {
 			return "", n.topScore
@@ -111,19 +110,10 @@ func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
 	}
 
 	if len(s) > 0 {
-		if n.lastMatch != nil {
-			r, ms := n.lastMatch.findBest(s, minScore)
-			if r != "" && ms > minScore {
-				res = r
-				minScore = ms
+		for _, nd := range n.nodesPure[s[0]] {
+			if nd.topScore < minScore {
+				break
 			}
-		}
-
-		for i, nd := range n.nodesPure[s[0]] {
-			if nd == n.lastMatch {
-				continue
-			}
-
 			r, ms := nd.findBest(s, minScore)
 			if ms < minScore {
 				break
@@ -132,17 +122,13 @@ func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
 			if r != "" {
 				res = r
 				minScore = ms
-				if i > 0 {
-					n.lastMatch = nd
-				}
 			}
 		}
 
-		for i, nd := range n.nodesFuzzy {
-			if nd == n.lastMatch {
-				continue
+		for _, nd := range n.nodesFuzzy {
+			if nd.topScore < minScore {
+				break
 			}
-
 			r, ms := nd.findBest(s, minScore)
 			if ms < minScore {
 				break
@@ -151,9 +137,6 @@ func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
 			if r != "" {
 				res = r
 				minScore = ms
-				if i > 0 {
-					n.lastMatch = nd
-				}
 			}
 		}
 	}

@@ -65,22 +65,3 @@ func mapToBytes(mapping func(rune) rune, s string) []byte {
 	}
 	return b[0:nbytes]
 }
-
-func smallBytesIndex(s, sep []byte) int {
-	c := sep[0]
-
-start:
-	for i, ch := range s[:len(s)-len(sep)+1] {
-		if c != ch {
-			continue
-		}
-
-		for j := len(sep) - 1; j > 0; j-- {
-			if s[i+j] != sep[j] {
-				continue start
-			}
-		}
-		return i
-	}
-	return -1
-}

@@ -15,9 +15,9 @@ const (
 	MODE_STATIC int = 1
 )
 
-type Expression []*Token
+type Expression []Token
 
-type Tokens []*Token
+type Tokens []Token
 
 type Token struct {
 	match []byte
@@ -37,7 +37,7 @@ func (t *Token) Shard() byte {
 	}
 }
 
-func (t *Token) Equal(t1 *Token) bool {
+func (t *Token) Equal(t1 Token) bool {
 	if !bytes.Equal(t.match, t1.match) {
 		return false
 	}
@@ -71,7 +71,7 @@ func (t *Token) MatchOne(r []byte) (bool, []byte) {
 	}
 
 	if t.multi {
-		ind := smallBytesIndex(r, t.match)
+		ind := bytes.Index(r, t.match)
 		if ind == -1 {
 			return false, nil
 		}
@@ -85,7 +85,7 @@ func (t *Token) MatchOne(r []byte) (bool, []byte) {
 }
 
 type parserState struct {
-	lastToken *Token
+	lastToken Token
 	lastMode  int
 	exp       Expression
 }
@@ -93,8 +93,8 @@ type parserState struct {
 func (ps *parserState) process(r rune) {
 	mode := ps.modeByR(r)
 
-	if ps.lastToken == nil {
-		ps.lastToken = &Token{match: make([]byte, 0, 16)}
+	if ps.lastToken.match == nil {
+		ps.lastToken = Token{match: make([]byte, 0, 16)}
 	}
 
 	modMode := false
@@ -111,7 +111,7 @@ func (ps *parserState) process(r rune) {
 	if ps.lastMode > 0 && modMode && !lastModMode {
 		ps.exp = append(ps.exp, ps.lastToken)
 
-		ps.lastToken = &Token{match: make([]byte, 0, 16)}
+		ps.lastToken = Token{match: make([]byte, 0, 16)}
 	}
 
 	// update
@@ -138,7 +138,7 @@ func (ps *parserState) modeByR(r rune) int {
 
 func (ps *parserState) last() {
 	// save prev token
-	if ps.lastToken != nil {
+	if ps.lastToken.match != nil {
 		ps.exp = append(ps.exp, ps.lastToken)
 	}
 }
