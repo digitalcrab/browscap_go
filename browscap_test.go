@@ -52,12 +52,11 @@ func TestGetBrowserYandex(t *testing.T) {
 	if browser, ok := GetBrowser("Yandex Browser 1.1"); !ok {
 		t.Error("Browser not found")
 	} else if browser.Browser != "Yandex Browser" {
-		t.Errorf("Expected Chrome but got %q", browser.Browser)
+		t.Errorf("Expected Yandex Browser but got %q", browser.Browser)
 	} else if browser.IsCrawler() != false {
 		t.Errorf("Expected false but got %t", browser.IsCrawler())
 	}
 }
-
 func TestGetBrowser360Spider(t *testing.T) {
 	if browser, ok := GetBrowser("360Spider"); !ok {
 		t.Error("Browser not found")
@@ -68,6 +67,15 @@ func TestGetBrowser360Spider(t *testing.T) {
 	}
 }
 
+func TestGetBrowserIssues(t *testing.T) {
+	// https://github.com/digitalcrab/browscap_go/issues/4
+	ua := "Mozilla/5.0 (iPad; CPU OS 5_0_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A405 Safari/7534.48.3"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.DeviceType != "Tablet" {
+		t.Errorf("Expected tablet %q", browser.DeviceType)
+	}
+}
 func TestLastVersion(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

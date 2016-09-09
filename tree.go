@@ -1,16 +1,13 @@
 package browscap_go
 
 import (
+	"math"
 	"sort"
 	"unicode"
 )
 
 type ExpressionTree struct {
 	root *node
-}
-
-func (r *ExpressionTree) Print() {
-
 }
 
 func NewExpressionTree() *ExpressionTree {
@@ -20,30 +17,29 @@ func NewExpressionTree() *ExpressionTree {
 }
 
 func (r *ExpressionTree) Find(userAgent []byte) string {
-	res, _ := r.root.findBest(userAgent, -1)
+	res, _ := r.root.findBest(userAgent, math.MaxInt32)
 	return res
 }
 
-func (r *ExpressionTree) Add(name string) {
+func (r *ExpressionTree) Add(name string, lineNum int) {
 	nameBytes := mapToBytes(unicode.ToLower, name)
 	exp := CompileExpression(nameBytes)
 	bytesPool.Put(nameBytes)
 
-	score := int(len(name))
+	score := lineNum + 1
 
 	last := r.root
 	for _, e := range exp {
-		shard := e.Shard()
-
 		var found *node
-		for _, node := range last.nodesPure[shard] {
-			if node.token.Equal(e) {
-				found = node
-				break
-			}
-		}
-		if found == nil {
+		if e.Fuzzy() {
 			for _, node := range last.nodesFuzzy {
+				if node.token.Equal(e) {
+					found = node
+					break
+				}
+			}
+		} else {
+			for _, node := range last.nodesPure[e.Shard()] {
 				if node.token.Equal(e) {
 					found = node
 					break
@@ -56,7 +52,7 @@ func (r *ExpressionTree) Add(name string) {
 			}
 			last.addChild(found)
 		}
-		if score > found.topScore {
+		if score < found.topScore || found.topScore == 0 {
 			found.topScore = score
 		}
 		last = found
@@ -92,7 +88,7 @@ func (n *node) addChild(a *node) {
 }
 
 func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
-	if n.topScore <= minScore {
+	if n.topScore >= minScore {
 		return "", -1
 	}
 
@@ -103,41 +99,36 @@ func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
 			return "", n.topScore
 		}
 
-		if n.name != "" {
-			res = n.name
-			minScore = n.score
+		if n.name != "" && len(s) == 0 {
+			return n.name, n.score
 		}
 	}
 
-	if len(s) > 0 {
-		for _, nd := range n.nodesPure[s[0]] {
-			if nd.topScore < minScore {
-				break
-			}
-			r, ms := nd.findBest(s, minScore)
-			if ms < minScore {
-				break
-			}
+	if len(s) == 0 {
+		return "", -1
+	}
 
-			if r != "" {
-				res = r
-				minScore = ms
-			}
+	for _, nd := range n.nodesPure[s[0]] {
+		r, ms := nd.findBest(s, minScore)
+		if ms > minScore {
+			break
 		}
 
-		for _, nd := range n.nodesFuzzy {
-			if nd.topScore < minScore {
-				break
-			}
-			r, ms := nd.findBest(s, minScore)
-			if ms < minScore {
-				break
-			}
+		if r != "" {
+			res = r
+			minScore = ms
+		}
+	}
 
-			if r != "" {
-				res = r
-				minScore = ms
-			}
+	for _, nd := range n.nodesFuzzy {
+		r, ms := nd.findBest(s, minScore)
+		if ms > minScore {
+			break
+		}
+
+		if r != "" {
+			res = r
+			minScore = ms
 		}
 	}
 
@@ -151,8 +142,7 @@ func (n nodes) Len() int {
 }
 
 func (n nodes) Less(i, j int) bool {
-	// Sort reverse
-	return n[i].topScore > n[j].topScore
+	return n[i].topScore < n[j].topScore
 }
 
 func (n nodes) Swap(i, j int) {
