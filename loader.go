@@ -37,6 +37,8 @@ func loadFromIniFile(path string) (*dictionary, error) {
 	buf := bufio.NewReader(file)
 	sectionName := ""
 
+	lineNum := 0
+
 	for {
 		line, _, err := buf.ReadLine()
 		if err != nil {
@@ -98,8 +100,9 @@ func loadFromIniFile(path string) (*dictionary, error) {
 
 		// Create section
 		if _, ok := dict.browsers[sectionName]; !ok {
-			dict.tree.Add(sectionName)
+			dict.tree.Add(sectionName, lineNum)
 			dict.browsers[sectionName] = &Browser{}
+			lineNum++
 		}
 
 		dict.browsers[sectionName].setValue(key, val)
