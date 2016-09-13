@@ -17,7 +17,11 @@ func NewExpressionTree() *ExpressionTree {
 }
 
 func (r *ExpressionTree) Find(userAgent []byte) string {
-	res, _ := r.root.findBest(userAgent, math.MaxInt32)
+	if len(userAgent) == 0 {
+		return ""
+	}
+
+	res, _ := r.root.findBest(userAgent, math.MaxInt32, 0)
 	return res
 }
 
@@ -48,29 +52,36 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 		}
 		if found == nil {
 			found = &node{
-				token: e,
+				token:    e,
+				topScore: score,
 			}
 			last.addChild(found)
-		}
-		if score < found.topScore || found.topScore == 0 {
+		} else if score < found.topScore {
 			found.topScore = score
+			last.sortChildren(found)
 		}
 		last = found
 	}
 
 	last.name = name
-	last.score = score
 }
 
 type node struct {
-	name  string
-	score int
+	name string
 
 	token Token
 
 	nodesPure  map[byte]nodes
 	nodesFuzzy nodes
 	topScore   int
+}
+
+func (n *node) sortChildren(a *node) {
+	if a.token.Fuzzy() {
+		sort.Sort(n.nodesFuzzy)
+	} else {
+		sort.Sort(n.nodesPure[a.token.Shard()])
+	}
 }
 
 func (n *node) addChild(a *node) {
@@ -87,46 +98,36 @@ func (n *node) addChild(a *node) {
 	}
 }
 
-func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
-	if n.topScore >= minScore {
-		return "", -1
-	}
-
-	match := false
+func (n *node) findBest(s []byte, minScore int, x int) (res string, maxScore int) {
 	if n.token.match != nil {
+		match := false
 		match, s = n.token.MatchOne(s)
 		if !match {
 			return "", n.topScore
 		}
 
-		if n.name != "" && len(s) == 0 {
-			return n.name, n.score
+		if len(s) == 0 {
+			return n.name, n.topScore
 		}
-	}
-
-	if len(s) == 0 {
-		return "", -1
 	}
 
 	for _, nd := range n.nodesPure[s[0]] {
-		r, ms := nd.findBest(s, minScore)
-		if ms > minScore {
+		if nd.topScore > minScore {
 			break
 		}
-
-		if r != "" {
+		r, ms := nd.findBest(s, minScore, x+1)
+		if r != "" && ms < minScore {
 			res = r
 			minScore = ms
 		}
 	}
 
 	for _, nd := range n.nodesFuzzy {
-		r, ms := nd.findBest(s, minScore)
-		if ms > minScore {
+		if nd.topScore > minScore {
 			break
 		}
-
-		if r != "" {
+		r, ms := nd.findBest(s, minScore, x+1)
+		if r != "" && ms < minScore {
 			res = r
 			minScore = ms
 		}
