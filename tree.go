@@ -58,7 +58,6 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 			last.addChild(found)
 		} else if score < found.topScore {
 			found.topScore = score
-			last.sortChildren(found)
 		}
 		last = found
 	}
@@ -73,28 +72,28 @@ type node struct {
 
 	nodesPure  map[byte]nodes
 	nodesFuzzy nodes
-	topScore   int
+	sorted     bool
+
+	topScore int
 }
 
-func (n *node) sortChildren(a *node) {
-	if a.token.Fuzzy() {
-		sort.Sort(n.nodesFuzzy)
-	} else {
-		sort.Sort(n.nodesPure[a.token.Shard()])
+func (n *node) sortChildren() {
+	sort.Sort(n.nodesFuzzy)
+	for _, ch := range n.nodesPure {
+		sort.Sort(ch)
 	}
+	n.sorted = true
 }
 
 func (n *node) addChild(a *node) {
 	if a.token.Fuzzy() {
 		n.nodesFuzzy = append(n.nodesFuzzy, a)
-		sort.Sort(n.nodesFuzzy)
 	} else {
 		if n.nodesPure == nil {
 			n.nodesPure = map[byte]nodes{}
 		}
 		shard := a.token.Shard()
 		n.nodesPure[shard] = append(n.nodesPure[shard], a)
-		sort.Sort(n.nodesPure[shard])
 	}
 }
 
@@ -109,6 +108,10 @@ func (n *node) findBest(s []byte, minScore int, x int) (res string, maxScore int
 		if len(s) == 0 {
 			return n.name, n.topScore
 		}
+	}
+
+	if !n.sorted {
+		n.sortChildren()
 	}
 
 	for _, nd := range n.nodesPure[s[0]] {

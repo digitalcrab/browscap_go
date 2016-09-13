@@ -72,16 +72,16 @@ func (t *Token) MatchOne(r []byte) (bool, []byte) {
 
 	if t.multi {
 		ind := bytes.Index(r, t.match)
-		if ind == -1 {
-			return false, nil
+		if ind >= 0 {
+			return true, r[ind+n:]
 		}
-		return true, r[ind+n:]
+	} else {
+		if bytes.Equal(r[:n], t.match) {
+			return true, r[n:]
+		}
 	}
 
-	if !bytes.Equal(r[:n], t.match) {
-		return false, nil
-	}
-	return true, r[n:]
+	return false, nil
 }
 
 type parserState struct {
@@ -145,7 +145,7 @@ func (ps *parserState) last() {
 
 func CompileExpression(s []byte) Expression {
 	state := &parserState{
-		exp:      Expression{},
+		exp:      make(Expression, 0, 8),
 		lastMode: -1,
 	}
 	reader := bytes.NewReader(s)

@@ -3,20 +3,15 @@ package browscap_go
 import (
 	"bufio"
 	"bytes"
-	"io"
 	"os"
 )
 
 var (
 	// Ini
-	sEmpty   = []byte{}     // empty signal
-	nComment = []byte{'#'}  // number signal
-	sComment = []byte{';'}  // semicolon signal
-	sStart   = []byte{'['}  // section start signal
-	sEnd     = []byte{']'}  // section end signal
-	sEqual   = []byte{'='}  // equal signal
-	sQuote1  = []byte{'"'}  // quote " signal
-	sQuote2  = []byte{'\''} // quote ' signal
+	nComment = []byte{'#'} // number signal
+	sComment = []byte{';'} // semicolon signal
+	sStart   = []byte{'['} // section start signal
+	sEnd     = []byte{']'} // section end signal
 
 	versionSection = "GJK_Browscap_Version"
 	versionKey     = "Version"
@@ -31,31 +26,16 @@ func loadFromIniFile(path string) (*dictionary, error) {
 
 	dict := newDictionary()
 
-	buf := bufio.NewReader(file)
 	sectionName := ""
 
 	lineNum := 0
 
-	for {
-		line, _, err := buf.ReadLine()
-		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				return nil, err
-			}
-		}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Bytes()
 
-		// Empty line
-		if bytes.Equal(sEmpty, line) {
-			continue
-		}
-
-		// Trim
 		line = bytes.TrimSpace(line)
-
-		// Empty line
-		if bytes.Equal(sEmpty, line) {
+		if len(line) == 0 {
 			continue
 		}
 
@@ -71,18 +51,15 @@ func loadFromIniFile(path string) (*dictionary, error) {
 		}
 
 		// Key => Value
-		kv := bytes.SplitN(line, sEqual, 2)
+		kvSplit := bytes.IndexByte(line, '=')
 
 		// Parse Key
-		keyb := bytes.TrimSpace(kv[0])
+		keyb := bytes.TrimSpace(line[0:kvSplit])
 
 		// Parse Value
-		valb := bytes.TrimSpace(kv[1])
-		if bytes.HasPrefix(valb, sQuote1) {
-			valb = bytes.Trim(valb, `"`)
-		}
-		if bytes.HasPrefix(valb, sQuote2) {
-			valb = bytes.Trim(valb, `'`)
+		valb := bytes.TrimSpace(line[kvSplit+1:])
+		if valb[0] == '"' || valb[0] == '\'' {
+			valb = valb[1 : len(valb)-1]
 		}
 
 		key := string(keyb)
@@ -95,14 +72,21 @@ func loadFromIniFile(path string) (*dictionary, error) {
 			continue
 		}
 
-		// Create section
 		if _, ok := dict.browsers[sectionName]; !ok {
 			dict.tree.Add(sectionName, lineNum)
-			dict.browsers[sectionName] = &Browser{}
-			lineNum++
+
+			browser := &Browser{}
+			browser.setValue(key, val)
+			dict.browsers[sectionName] = browser
+		} else {
+			dict.browsers[sectionName].setValue(key, val)
 		}
 
-		dict.browsers[sectionName].setValue(key, val)
+		lineNum++
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
 	}
 
 	return dict, nil
