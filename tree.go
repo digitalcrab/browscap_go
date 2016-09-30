@@ -95,6 +95,7 @@ func (n *node) addChild(a *node) {
 		shard := a.token.Shard()
 		n.nodesPure[shard] = append(n.nodesPure[shard], a)
 	}
+	n.sorted = false
 }
 
 func (n *node) findBest(s []byte, minScore int, x int) (res string, maxScore int) {

@@ -75,7 +75,15 @@ func TestGetBrowserIssues(t *testing.T) {
 	} else if browser.DeviceType != "Tablet" {
 		t.Errorf("Expected tablet %q", browser.DeviceType)
 	}
+
+	ua = "Mozilla/5.0 (Linux; U; Android 4.1.2; en-gb; GT-N8010 Build/JZO54K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.DeviceType != "Tablet" {
+		t.Errorf("Expected tablet %q", browser.DeviceType)
+	}
 }
+
 func TestLastVersion(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

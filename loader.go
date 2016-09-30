@@ -58,6 +58,9 @@ func loadFromIniFile(path string) (*dictionary, error) {
 
 		// Parse Value
 		valb := bytes.TrimSpace(line[kvSplit+1:])
+		if len(valb) == 0 {
+			continue
+		}
 		if valb[0] == '"' || valb[0] == '\'' {
 			valb = valb[1 : len(valb)-1]
 		}
