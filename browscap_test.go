@@ -82,6 +82,14 @@ func TestGetBrowserIssues(t *testing.T) {
 	} else if browser.DeviceType != "Tablet" {
 		t.Errorf("Expected tablet %q", browser.DeviceType)
 	}
+
+	// Trailing wildcard handling bug
+	ua = "ApacheBench/"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.Browser != "Apache Bench" {
+		t.Errorf("Expected Apache Bench %q", browser.Browser)
+	}
 }
 
 func TestLastVersion(t *testing.T) {

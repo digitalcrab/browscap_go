@@ -98,19 +98,21 @@ func (n *node) findBest(s []byte, minScore int, x int) (res string, maxScore int
 			return "", n.topScore
 		}
 
-		if len(s) == 0 {
+		if len(s) == 0 && len(n.nodesFuzzy) == 0 {
 			return n.name, n.topScore
 		}
 	}
 
-	for _, nd := range n.nodesPure[s[0]] {
-		if nd.topScore > minScore {
-			break
-		}
-		r, ms := nd.findBest(s, minScore, x+1)
-		if r != "" && ms < minScore {
-			res = r
-			minScore = ms
+	if len(s) > 0 {
+		for _, nd := range n.nodesPure[s[0]] {
+			if nd.topScore > minScore {
+				break
+			}
+			r, ms := nd.findBest(s, minScore, x+1)
+			if r != "" && ms < minScore {
+				res = r
+				minScore = ms
+			}
 		}
 	}
 
