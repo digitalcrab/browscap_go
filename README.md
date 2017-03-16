@@ -1,4 +1,4 @@
-Golang CLient for Browser Capabilities Project
+Golang Client for Browser Capabilities Project
 ==============================================
 
 [Browscap](http://browscap.org/) provides regularly updated rules for parsing user agents.
