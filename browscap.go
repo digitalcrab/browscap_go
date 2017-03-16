@@ -17,12 +17,7 @@ var (
 	dict        *dictionary
 	initialized bool
 	version     string
-	debug       bool
 )
-
-func Debug(val bool) {
-	debug = val
-}
 
 func InitBrowsCap(path string, force bool) error {
 	if initialized && !force {

@@ -78,7 +78,9 @@ func loadFromIniFile(path string) (*dictionary, error) {
 		if _, ok := dict.browsers[sectionName]; !ok {
 			dict.tree.Add(sectionName, lineNum)
 
-			browser := &Browser{}
+			browser := &Browser{
+				Section: sectionName,
+			}
 			browser.setValue(key, val)
 			dict.browsers[sectionName] = browser
 		} else {

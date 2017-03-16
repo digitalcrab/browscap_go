@@ -1,7 +1,6 @@
 package browscap_go
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -11,6 +10,8 @@ type Browser struct {
 	parent  string //name of the parent
 	built   bool   // has complete data from parents
 	buildMu sync.Mutex
+
+	Section string
 
 	Browser         string
 	BrowserVersion  string
@@ -46,14 +47,14 @@ func (browser *Browser) build(browsers map[string]*Browser) {
 
 	browser.buildMu.Lock()
 	defer browser.buildMu.Unlock()
-	// Check again after lock if another gorutine built the object while we were waiting
+	// Check again after lock if another gorutine built the object while we were waiting for lock
 	if browser.built {
 		return
 	}
 
-	n := reflect.ValueOf(*browser).NumField()
+	browserValue := reflect.ValueOf(browser).Elem()
+	n := browserValue.NumField()
 
-	current := reflect.ValueOf(browser)
 	parent := browser.parent
 	for parent != "" {
 		b, ok := browsers[parent]
@@ -61,19 +62,19 @@ func (browser *Browser) build(browsers map[string]*Browser) {
 			break
 		}
 
-		parentObj := reflect.ValueOf(b)
+		parentObj := reflect.ValueOf(b).Elem()
 		for i := 0; i < n; i++ {
-			cField := current.Elem().Field(i)
+			cField := browserValue.Field(i)
 			if cField.String() != "" {
 				continue
 			}
 
-			pField := parentObj.Elem().Field(i)
+			pField := parentObj.Field(i)
 			if pField.String() == "" {
 				continue
 			}
 
-			cField.SetString(pField.String())
+			cField.Set(pField)
 		}
 
 		parent = b.parent
@@ -127,14 +128,6 @@ func (browser *Browser) setValue(key, item string) {
 
 func extractBrowser(data map[string]string) *Browser {
 	browser := &Browser{}
-
-	if debug {
-		fmt.Println("= Browser ==================")
-		for k, v := range data {
-			fmt.Printf("%s = %s\n", k, v)
-		}
-		fmt.Println("============================")
-	}
 
 	// Browser
 	if item, ok := data["Browser"]; ok {
