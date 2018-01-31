@@ -17,9 +17,9 @@ const (
 	TEST_IPHONE_AGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_2 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5"
 )
 
-func initFromTestIniFile(t *testing.T) {
+func initFromTestIniFile(tb testing.TB) {
 	if err := InitBrowsCap(TEST_INI_FILE, false); err != nil {
-		t.Fatalf("%v", err)
+		tb.Fatalf("%v", err)
 	}
 }
 
@@ -155,9 +155,7 @@ func BenchmarkInit(b *testing.B) {
 }
 
 func BenchmarkGetBrowser(b *testing.B) {
-	if err := InitBrowsCap(TEST_INI_FILE, false); err != nil {
-		b.Fatalf("%v", err)
-	}
+	initFromTestIniFile(b)
 	
 	data, err := ioutil.ReadFile("test-data/user_agents_sample.txt")
 	if err != nil {
