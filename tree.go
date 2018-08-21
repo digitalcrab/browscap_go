@@ -4,7 +4,6 @@
 package browscap_go
 
 import (
-	"math"
 	"sort"
 	"unicode"
 )
@@ -24,7 +23,7 @@ func (r *ExpressionTree) Find(userAgent []byte) string {
 		return ""
 	}
 
-	res, _ := r.root.findBest(userAgent, math.MaxInt32, 0)
+	res, _ := r.root.findBest(userAgent, 0, 0)
 	return res
 }
 
@@ -33,7 +32,7 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 	exp := CompileExpression(nameBytes)
 	bytesPool.Put(nameBytes)
 
-	score := lineNum + 1
+	score := len(name)
 
 	last := r.root
 	for _, e := range exp {
@@ -59,7 +58,7 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 				topScore: score,
 			}
 			last.addChild(found)
-		} else if score < found.topScore {
+		} else if score > found.topScore {
 			found.topScore = score
 		}
 		last = found
@@ -82,14 +81,14 @@ type node struct {
 func (n *node) addChild(a *node) {
 	if a.token.Fuzzy() {
 		n.nodesFuzzy = append(n.nodesFuzzy, a)
-		sort.Sort(n.nodesFuzzy)
+		sort.Sort(sort.Reverse(n.nodesFuzzy))
 	} else {
 		if n.nodesPure == nil {
 			n.nodesPure = map[byte]nodes{}
 		}
 		shard := a.token.Shard()
 		n.nodesPure[shard] = append(n.nodesPure[shard], a)
-		sort.Sort(n.nodesPure[shard])
+		sort.Sort(sort.Reverse(n.nodesPure[shard]))
 	}
 }
 
@@ -108,11 +107,11 @@ func (n *node) findBest(s []byte, minScore int, x int) (res string, maxScore int
 
 	if len(s) > 0 {
 		for _, nd := range n.nodesPure[s[0]] {
-			if nd.topScore > minScore {
+			if nd.topScore <= minScore {
 				break
 			}
 			r, ms := nd.findBest(s, minScore, x+1)
-			if r != "" && ms < minScore {
+			if r != "" && ms > minScore {
 				res = r
 				minScore = ms
 			}
@@ -120,11 +119,11 @@ func (n *node) findBest(s []byte, minScore int, x int) (res string, maxScore int
 	}
 
 	for _, nd := range n.nodesFuzzy {
-		if nd.topScore > minScore {
+		if nd.topScore <= minScore {
 			break
 		}
 		r, ms := nd.findBest(s, minScore, x+1)
-		if r != "" && ms < minScore {
+		if r != "" && ms > minScore {
 			res = r
 			minScore = ms
 		}

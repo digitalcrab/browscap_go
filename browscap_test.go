@@ -93,6 +93,14 @@ func TestGetBrowserIssues(t *testing.T) {
 	} else if browser.Browser != "Apache Bench" {
 		t.Errorf("Expected Apache Bench %q", browser.Browser)
 	}
+
+	// Rule sorting issue (score by rule lenght not by line number)
+	ua = "Mozilla/5.0 (Linux; Android 7.1.1; SM-T377T Build/NMF26X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.83 Safari/537.36"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.DeviceType != "Tablet" {
+		t.Errorf("Expected Tablet %q", browser.DeviceType)
+	}
 }
 
 func TestLastVersion(t *testing.T) {
