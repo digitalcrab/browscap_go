@@ -16,34 +16,13 @@ const (
 	CheckVersionUrl = "http://browscap.org/version-number"
 )
 
-var (
-	dict        *dictionary
-	initialized bool
-	version     string
-	debug       bool
-)
-
-func Debug(val bool) {
-	debug = val
+type BrowsCap struct {
+	dict    *dictionary
+	version string
 }
 
-func InitBrowsCap(path string, force bool) error {
-	if initialized && !force {
-		return nil
-	}
-	var err error
-
-	// Load ini file
-	if dict, err = loadFromIniFile(path); err != nil {
-		return fmt.Errorf("browscap: An error occurred while reading file, %v ", err)
-	}
-
-	initialized = true
-	return nil
-}
-
-func InitializedVersion() string {
-	return version
+func (browscap *BrowsCap) InitializedVersion() string {
+	return browscap.version
 }
 
 func LastVersion() (string, error) {
@@ -92,20 +71,16 @@ func DownloadFile(saveAs string) error {
 	return nil
 }
 
-func GetBrowser(userAgent string) (browser *Browser, ok bool) {
-	if !initialized {
-		return
-	}
-
+func (browscap *BrowsCap) GetBrowser(userAgent string) (browser *Browser, ok bool) {
 	agent := mapToBytes(unicode.ToLower, userAgent)
 	defer bytesPool.Put(agent)
 
-	name := dict.tree.Find(agent)
+	name := browscap.dict.tree.Find(agent)
 	if name == "" {
 		return
 	}
 
-	browser = dict.getBrowser(name)
+	browser = browscap.dict.getBrowser(name)
 	if browser != nil {
 		ok = true
 	}

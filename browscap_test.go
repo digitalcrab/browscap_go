@@ -78,7 +78,31 @@ func TestGetBrowserIssues(t *testing.T) {
 	} else if browser.DeviceType != "Tablet" {
 		t.Errorf("Expected tablet %q", browser.DeviceType)
 	}
+
+	ua = "Mozilla/5.0 (Linux; U; Android 4.1.2; en-gb; GT-N8010 Build/JZO54K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.DeviceType != "Tablet" {
+		t.Errorf("Expected tablet %q", browser.DeviceType)
+	}
+
+	// Trailing wildcard handling bug
+	ua = "ApacheBench/"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.Browser != "Apache Bench" {
+		t.Errorf("Expected Apache Bench %q", browser.Browser)
+	}
+
+	// Rule sorting issue (score by rule lenght not by line number)
+	ua = "Mozilla/5.0 (Linux; Android 7.1.1; SM-T377T Build/NMF26X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.83 Safari/537.36"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.DeviceType != "Tablet" {
+		t.Errorf("Expected Tablet %q", browser.DeviceType)
+	}
 }
+
 func TestLastVersion(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

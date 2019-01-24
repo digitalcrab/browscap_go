@@ -4,7 +4,6 @@
 package browscap_go
 
 import (
-	"math"
 	"sort"
 	"unicode"
 )
@@ -20,7 +19,11 @@ func NewExpressionTree() *ExpressionTree {
 }
 
 func (r *ExpressionTree) Find(userAgent []byte) string {
-	res, _ := r.root.findBest(userAgent, math.MaxInt32)
+	if len(userAgent) == 0 {
+		return ""
+	}
+
+	res, _ := r.root.findBest(userAgent, 0, 0)
 	return res
 }
 
@@ -29,7 +32,7 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 	exp := CompileExpression(nameBytes)
 	bytesPool.Put(nameBytes)
 
-	score := lineNum + 1
+	score := len(name)
 
 	last := r.root
 	for _, e := range exp {
@@ -51,85 +54,76 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 		}
 		if found == nil {
 			found = &node{
-				token: e,
+				token:    e,
+				topScore: score,
 			}
 			last.addChild(found)
-		}
-		if score < found.topScore || found.topScore == 0 {
+		} else if score > found.topScore {
 			found.topScore = score
 		}
 		last = found
 	}
 
 	last.name = name
-	last.score = score
 }
 
 type node struct {
-	name  string
-	score int
+	name string
 
 	token Token
 
 	nodesPure  map[byte]nodes
 	nodesFuzzy nodes
-	topScore   int
+
+	topScore int
 }
 
 func (n *node) addChild(a *node) {
 	if a.token.Fuzzy() {
 		n.nodesFuzzy = append(n.nodesFuzzy, a)
-		sort.Sort(n.nodesFuzzy)
+		sort.Sort(sort.Reverse(n.nodesFuzzy))
 	} else {
 		if n.nodesPure == nil {
 			n.nodesPure = map[byte]nodes{}
 		}
 		shard := a.token.Shard()
 		n.nodesPure[shard] = append(n.nodesPure[shard], a)
-		sort.Sort(n.nodesPure[shard])
+		sort.Sort(sort.Reverse(n.nodesPure[shard]))
 	}
 }
 
-func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
-	if n.topScore >= minScore {
-		return "", -1
-	}
-
-	match := false
+func (n *node) findBest(s []byte, minScore int, x int) (res string, maxScore int) {
 	if n.token.match != nil {
+		match := false
 		match, s = n.token.MatchOne(s)
 		if !match {
 			return "", n.topScore
 		}
 
-		if n.name != "" && len(s) == 0 {
-			return n.name, n.score
+		if len(s) == 0 && len(n.nodesFuzzy) == 0 {
+			return n.name, n.topScore
 		}
 	}
 
-	if len(s) == 0 {
-		return "", -1
-	}
-
-	for _, nd := range n.nodesPure[s[0]] {
-		r, ms := nd.findBest(s, minScore)
-		if ms > minScore {
-			break
-		}
-
-		if r != "" {
-			res = r
-			minScore = ms
+	if len(s) > 0 {
+		for _, nd := range n.nodesPure[s[0]] {
+			if nd.topScore <= minScore {
+				break
+			}
+			r, ms := nd.findBest(s, minScore, x+1)
+			if r != "" && ms > minScore {
+				res = r
+				minScore = ms
+			}
 		}
 	}
 
 	for _, nd := range n.nodesFuzzy {
-		r, ms := nd.findBest(s, minScore)
-		if ms > minScore {
+		if nd.topScore <= minScore {
 			break
 		}
-
-		if r != "" {
+		r, ms := nd.findBest(s, minScore, x+1)
+		if r != "" && ms > minScore {
 			res = r
 			minScore = ms
 		}

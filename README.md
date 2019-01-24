@@ -1,20 +1,12 @@
-# Browser Capabilities GoLang Project
+Golang Client for Browser Capabilities Project
+==============================================
 
-PHP has `get_browser()` function which tells what the user's browser is capable of.
-You can check original documentation [here](http://php.net/get_browser). 
-This is GoLang analog of `get_browser()` function.
+[Browscap](http://browscap.org/) provides regularly updated rules for parsing user agents.
 
-[![Build Status](https://secure.travis-ci.org/digitalcrab/browscap_go.png?branch=master)](http://travis-ci.org/digitalcrab/browscap_go)
+For more info check the [officall PHP client](https://github.com/browscap/browscap-php).
 
-## Introduction
-
-The [browscap.ini](http://browscap.org/) file is a database which provides a lot of details about 
-browsers and their capabilities, such as name, versions, Javascript support and so on.
-
-## Quick start
-
-First of all you need initialize library with [browscap.ini](http://browscap.org/) file. 
-And then you can get Browser information as `Browser` structure.
+Example:
+--------
 
 ```go
 import (
@@ -38,6 +30,45 @@ func main() {
     	fmt.Printf("IsMobile = %t\n", browser.IsMobile())
 	}
 }
+```
+
+Browser object fields
+---------------------
+
+```go
+Browser         string
+BrowserVersion  string
+BrowserMajorVer string
+BrowserMinorVer string
+// Browser, Application, Bot/Crawler, Useragent Anonymizer, Offline Browser,
+// Multimedia Player, Library, Feed Reader, Email Client or unknown
+BrowserType string
+
+Platform        string
+PlatformShort   string
+PlatformVersion string
+
+// Mobile Phone, Mobile Device, Tablet, Desktop, TV Device, Console,
+// FonePad, Ebook Reader, Car Entertainment System or unknown
+DeviceType  string
+DeviceName  string
+DeviceBrand string
+
+Crawler string
+
+Cookies    string
+JavaScript string
+
+RenderingEngineName    string
+RenderingEngineVersion string
+```
+
+Bechmark
+--------
+
+```
+BenchmarkInit-4         	       1	2256895168 ns/op	346136904 B/op	 5700912 allocs/op
+BenchmarkGetBrowser-4   	   10000	    140975 ns/op	      37 B/op	       1 allocs/op
 ```
 
 ## License
