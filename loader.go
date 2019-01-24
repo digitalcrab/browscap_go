@@ -6,6 +6,7 @@ package browscap_go
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"os"
 )
 
@@ -20,20 +21,25 @@ var (
 	versionKey     = "Version"
 )
 
-func loadFromIniFile(path string) (*dictionary, error) {
+func NewBrowsCapFromFile(path string) (*BrowsCap, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
+	return NewBrowsCapFromReader(file)
+}
+
+func NewBrowsCapFromReader(reader io.Reader) (*BrowsCap, error) {
 	dict := newDictionary()
+	var version string
 
 	sectionName := ""
 
 	lineNum := 0
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Bytes()
 
@@ -97,5 +103,5 @@ func loadFromIniFile(path string) (*dictionary, error) {
 		return nil, err
 	}
 
-	return dict, nil
+	return &BrowsCap{dict, version}, nil
 }
