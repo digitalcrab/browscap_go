@@ -4,6 +4,7 @@
 package browscap_go
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -36,6 +37,20 @@ func InitBrowsCap(path string, force bool) error {
 	// Load ini file
 	if dict, err = loadFromIniFile(path); err != nil {
 		return fmt.Errorf("browscap: An error occurred while reading file, %v ", err)
+	}
+
+	initialized = true
+	return nil
+}
+
+func InitBrowsCapFromReader(reader *bufio.Reader, force bool) error {
+	if initialized && !force {
+		return nil
+	}
+	var err error
+
+	if dict, err = loadFromReader(reader); err != nil {
+		return fmt.Errorf("browscap: An error occurred while loading from reader, %v ", err)
 	}
 
 	initialized = true

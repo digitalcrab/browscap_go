@@ -32,9 +32,14 @@ func loadFromIniFile(path string) (*dictionary, error) {
 	}
 	defer file.Close()
 
+	buf := bufio.NewReader(file)
+
+	return loadFromReader(buf)
+}
+
+func loadFromReader(buf *bufio.Reader) (*dictionary, error) {
 	dict := newDictionary()
 
-	buf := bufio.NewReader(file)
 	sectionName := ""
 
 	lineNum := 0
