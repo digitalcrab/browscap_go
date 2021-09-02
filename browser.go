@@ -11,7 +11,7 @@ import (
 )
 
 type Browser struct {
-	parent  string //name of the parent
+	parent  string // name of the parent
 	built   bool   // has complete data from parents
 	buildMu sync.Mutex
 
@@ -121,8 +121,13 @@ func (browser *Browser) setValue(key, item string) {
 		browser.RenderingEngineVersion = item
 	} else if key == "Device_Type" {
 		browser.DeviceType = item
-	} else if key == "Device_Code_Name" {
+	} else if key == "Device_Name" {
 		browser.DeviceName = item
+	} else if key == "Device_Code_Name" {
+		// Prefer Device_Name to Device_Code_Name.
+		if browser.DeviceName == "" {
+			browser.DeviceName = item
+		}
 	} else if key == "Device_Brand_Name" {
 		browser.DeviceBrand = item
 	}

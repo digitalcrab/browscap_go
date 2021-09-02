@@ -60,6 +60,7 @@ func TestGetBrowserYandex(t *testing.T) {
 		t.Errorf("Expected false but got %t", browser.IsCrawler())
 	}
 }
+
 func TestGetBrowser360Spider(t *testing.T) {
 	if browser, ok := GetBrowser("360Spider"); !ok {
 		t.Error("Browser not found")
@@ -79,6 +80,16 @@ func TestGetBrowserIssues(t *testing.T) {
 		t.Errorf("Expected tablet %q", browser.DeviceType)
 	}
 }
+
+func TestGetBrowserDeviceName(t *testing.T) {
+	ua := "Mozilla/5.0 (Linux; Android 4.4.2; SM-T230 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Safari/537.36"
+	if browser, ok := GetBrowser(ua); !ok {
+		t.Error("Browser not found")
+	} else if browser.DeviceName != "Galaxy Tab 4 7.0" {
+		t.Errorf("Expected tablet %q", browser.DeviceName)
+	}
+}
+
 func TestLastVersion(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
