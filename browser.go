@@ -4,14 +4,13 @@
 package browscap_go
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
 )
 
 type Browser struct {
-	parent  string //name of the parent
+	parent  string // name of the parent
 	built   bool   // has complete data from parents
 	buildMu sync.Mutex
 
@@ -126,63 +125,6 @@ func (browser *Browser) setValue(key, item string) {
 	} else if key == "Device_Brand_Name" {
 		browser.DeviceBrand = item
 	}
-}
-
-func extractBrowser(data map[string]string) *Browser {
-	browser := &Browser{}
-
-	if debug {
-		fmt.Println("= Browser ==================")
-		for k, v := range data {
-			fmt.Printf("%s = %s\n", k, v)
-		}
-		fmt.Println("============================")
-	}
-
-	// Browser
-	if item, ok := data["Browser"]; ok {
-		browser.Browser = item
-	}
-	if item, ok := data["Version"]; ok {
-		browser.BrowserVersion = item
-	}
-	if item, ok := data["MajorVer"]; ok {
-		browser.BrowserMajorVer = item
-	}
-	if item, ok := data["MinorVer"]; ok {
-		browser.BrowserMinorVer = item
-	}
-	if item, ok := data["Browser_Type"]; ok {
-		browser.BrowserType = item
-	}
-
-	// Platform
-	if item, ok := data["Platform"]; ok {
-		browser.Platform = item
-		browser.PlatformShort = strings.ToLower(item)
-
-		if strings.HasPrefix(browser.PlatformShort, "win") {
-			browser.PlatformShort = "win"
-		} else if strings.HasPrefix(browser.PlatformShort, "mac") {
-			browser.PlatformShort = "mac"
-		}
-	}
-	if item, ok := data["Platform_Version"]; ok {
-		browser.PlatformVersion = item
-	}
-
-	// Device
-	if item, ok := data["Device_Type"]; ok {
-		browser.DeviceType = item
-	}
-	if item, ok := data["Device_Code_Name"]; ok {
-		browser.DeviceName = item
-	}
-	if item, ok := data["Device_Brand_Name"]; ok {
-		browser.DeviceBrand = item
-	}
-
-	return browser
 }
 
 func (browser *Browser) IsCrawler() bool {
