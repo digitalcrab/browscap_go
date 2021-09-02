@@ -34,6 +34,8 @@ func TestGetBrowser(t *testing.T) {
 		t.Errorf("Expected Blink but got %q", browser.RenderingEngineName)
 	} else if browser.Crawler != "false" {
 		t.Errorf("Expected false but got %q", browser.Crawler)
+	} else if browser.DevicePointingMethod != "mouse" {
+		t.Errorf("Expected mouse but got %q", browser.DevicePointingMethod)
 	}
 }
 
@@ -42,6 +44,8 @@ func TestGetBrowserIPhone(t *testing.T) {
 		t.Error("Browser not found")
 	} else if browser.DeviceName != "iPhone" {
 		t.Errorf("Expected iPhone but got %q", browser.DeviceName)
+	} else if browser.DevicePointingMethod != "touchscreen" {
+		t.Errorf("Expected touchscreen but got %q", browser.DevicePointingMethod)
 	} else if browser.Platform != "iOS" {
 		t.Errorf("Expected iOS but got %q", browser.Platform)
 	} else if browser.PlatformVersion != "4.3" {
@@ -60,6 +64,7 @@ func TestGetBrowserYandex(t *testing.T) {
 		t.Errorf("Expected false but got %t", browser.IsCrawler())
 	}
 }
+
 func TestGetBrowser360Spider(t *testing.T) {
 	if browser, ok := GetBrowser("360Spider"); !ok {
 		t.Error("Browser not found")
@@ -77,8 +82,11 @@ func TestGetBrowserIssues(t *testing.T) {
 		t.Error("Browser not found")
 	} else if browser.DeviceType != "Tablet" {
 		t.Errorf("Expected tablet %q", browser.DeviceType)
+	} else if browser.DevicePointingMethod != "touchscreen" {
+		t.Errorf("Expected touchscreen but got %q", browser.DevicePointingMethod)
 	}
 }
+
 func TestLastVersion(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

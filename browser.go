@@ -11,7 +11,7 @@ import (
 )
 
 type Browser struct {
-	parent  string //name of the parent
+	parent  string // name of the parent
 	built   bool   // has complete data from parents
 	buildMu sync.Mutex
 
@@ -29,9 +29,10 @@ type Browser struct {
 
 	// Mobile Phone, Mobile Device, Tablet, Desktop, TV Device, Console,
 	// FonePad, Ebook Reader, Car Entertainment System or unknown
-	DeviceType  string
-	DeviceName  string
-	DeviceBrand string
+	DeviceType           string
+	DeviceName           string
+	DeviceBrand          string
+	DevicePointingMethod string
 
 	Crawler string
 
@@ -125,6 +126,8 @@ func (browser *Browser) setValue(key, item string) {
 		browser.DeviceName = item
 	} else if key == "Device_Brand_Name" {
 		browser.DeviceBrand = item
+	} else if key == "Device_Pointing_Method" {
+		browser.DevicePointingMethod = item
 	}
 }
 
@@ -180,6 +183,9 @@ func extractBrowser(data map[string]string) *Browser {
 	}
 	if item, ok := data["Device_Brand_Name"]; ok {
 		browser.DeviceBrand = item
+	}
+	if item, ok := data["Device_Pointing_Method"]; ok {
+		browser.DevicePointingMethod = item
 	}
 
 	return browser
