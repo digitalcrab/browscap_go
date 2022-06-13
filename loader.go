@@ -7,7 +7,6 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"os"
 )
 
 var (
@@ -25,16 +24,9 @@ var (
 	versionKey     = "Version"
 )
 
-func loadFromIniFile(path string) (*dictionary, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
+func loadFromIniFileBuffer(buf *bufio.Reader) (*dictionary, error) {
 	dict := newDictionary()
 
-	buf := bufio.NewReader(file)
 	sectionName := ""
 
 	lineNum := 0
