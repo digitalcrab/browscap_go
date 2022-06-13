@@ -10,9 +10,10 @@ import (
 )
 
 const (
-	TEST_INI_FILE     = "./test-data/full_php_browscap.ini"
-	TEST_USER_AGENT   = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36"
-	TEST_IPHONE_AGENT = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_2 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5"
+	TEST_INI_FILE      = "./test-data/full_php_browscap.ini"
+	TEST_USER_AGENT    = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36"
+	TEST_IPHONE_AGENT  = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_3_2 like Mac OS X; en-us) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5"
+	TEST_ANDROID_AGENT = "Mozilla/5.0 (Linux; Android 9; MRD-LX3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Mobile Safari/537.36"
 )
 
 func TestInitBrowsCap(t *testing.T) {
@@ -51,6 +52,18 @@ func TestGetBrowserIPhone(t *testing.T) {
 	}
 }
 
+func TestGetBrowserAndroid(t *testing.T) {
+	if browser, ok := GetBrowser(TEST_ANDROID_AGENT); !ok {
+		t.Error("Browser not found")
+	} else if browser.DeviceName != "general Mobile Phone" {
+		t.Errorf("Expected general Mobile Phone but got %q", browser.DeviceName)
+	} else if browser.Platform != "Android" {
+		t.Errorf("Expected Android but got %q", browser.Platform)
+	} else if browser.IsMobile() != true {
+		t.Errorf("Expected true but got %t", browser.IsMobile())
+	}
+}
+
 func TestGetBrowserYandex(t *testing.T) {
 	if browser, ok := GetBrowser("Yandex Browser 1.1"); !ok {
 		t.Error("Browser not found")
@@ -60,6 +73,7 @@ func TestGetBrowserYandex(t *testing.T) {
 		t.Errorf("Expected false but got %t", browser.IsCrawler())
 	}
 }
+
 func TestGetBrowser360Spider(t *testing.T) {
 	if browser, ok := GetBrowser("360Spider"); !ok {
 		t.Error("Browser not found")
@@ -79,6 +93,7 @@ func TestGetBrowserIssues(t *testing.T) {
 		t.Errorf("Expected tablet %q", browser.DeviceType)
 	}
 }
+
 func TestLastVersion(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")

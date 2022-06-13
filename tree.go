@@ -29,7 +29,21 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 	exp := CompileExpression(nameBytes)
 	bytesPool.Put(nameBytes)
 
-	score := lineNum + 1
+	// https://github.com/browscap/browscap/wiki/Specification:-Lookup-Algorithm:
+	// If there are multiple matching patterns the longest pattern
+	// should be used to identify the browser.  If there are multiple
+	// patterns of the longest length then the pattern that is
+	// earliest in the list of patterns should be used to identify the
+	// browser.
+	// The formula below implements this algorithm, with lower numbers
+	// being better.
+	if lineNum>>20 > 0 {
+		panic("Need more bits for lineNum!")
+	}
+	if len(nameBytes)>>10 > 0 {
+		panic("Need more bits for the UA regexp length!")
+	}
+	score := int32(((1<<10)-len(nameBytes))<<20 + lineNum)
 
 	last := r.root
 	for _, e := range exp {
@@ -66,14 +80,14 @@ func (r *ExpressionTree) Add(name string, lineNum int) {
 }
 
 type node struct {
-	name  string
-	score int
+	name     string
+	score    int32
+	topScore int32
 
 	token Token
 
 	nodesPure  map[byte]nodes
 	nodesFuzzy nodes
-	topScore   int
 }
 
 func (n *node) addChild(a *node) {
@@ -90,7 +104,7 @@ func (n *node) addChild(a *node) {
 	}
 }
 
-func (n *node) findBest(s []byte, minScore int) (res string, maxScore int) {
+func (n *node) findBest(s []byte, minScore int32) (res string, maxScore int32) {
 	if n.topScore >= minScore {
 		return "", -1
 	}
